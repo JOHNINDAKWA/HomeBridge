@@ -204,47 +204,35 @@ export default function Payouts() {
       {/* Summary cards */}
       <section className="po-cards">
         <article className="po-card card">
-          <div className="po-card__icon">
-            <FiDollarSign />
-          </div>
+          
           <div className="po-card__meta">
             <span>Available balance</span>
             <b>{fmt(summary.available)}</b>
           </div>
-          <button className="btn btn--light po-card__cta">Request payout</button>
         </article>
 
         <article className="po-card card">
-          <div className="po-card__icon">
-            <FiCalendar />
-          </div>
+          
           <div className="po-card__meta">
             <span>Upcoming payout</span>
             <b>{fmt(summary.upcoming)}</b>
           </div>
-          <div className="po-card__ghost">Scheduled</div>
         </article>
 
         <article className="po-card card">
-          <div className="po-card__icon">
-            <FiCheckCircle />
-          </div>
+          
           <div className="po-card__meta">
             <span>Paid last 30 days</span>
             <b>{fmt(summary.last30)}</b>
           </div>
-          <div className="po-card__ghost">Statement</div>
         </article>
 
         <article className="po-card card">
-          <div className="po-card__icon">
-            <FiAlertCircle />
-          </div>
+         
           <div className="po-card__meta">
             <span>On hold</span>
             <b>{fmt(summary.holds)}</b>
           </div>
-          <div className="po-card__ghost">Compliance</div>
         </article>
       </section>
 

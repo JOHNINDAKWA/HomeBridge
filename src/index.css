@@ -63,6 +63,12 @@ img { max-width: 100%; display: block; }
   padding: 0 var(--space-5);
 }
 
+.container2 {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;

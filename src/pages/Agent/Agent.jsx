@@ -27,7 +27,7 @@ export default function Agent() {
 
   return (
     <section className="ag-wrap section">
-      <div className="container ag-shell card">
+      <div className="container2 ag-shell card">
         {/* Mobile top bar */}
         <div className="ag-mobilebar">
           <button
