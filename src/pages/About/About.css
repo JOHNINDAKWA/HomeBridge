@@ -4,6 +4,12 @@
 /* ========= WRAPPER ========= */
 .ab-wrap { background: transparent; }
 
+.containered {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
 /* ========= HERO ========= */
 .ab-hero {
   position: relative;

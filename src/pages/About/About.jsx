@@ -33,7 +33,7 @@ export default function About() {
         role="img"
         aria-label="About HomeBridge"
       >
-        <div className="container ab-hero__inner">
+        <div className="containered ab-hero__inner">
           <h1 className="ab-hero__title">About Us</h1>
           <p className="ab-hero__sub">
             HomeBridge helps international students secure verified housing before they fly.
@@ -52,7 +52,7 @@ export default function About() {
       </section>
 
       {/* ========== STORY / STATS (2-column) ========== */}
-      <section className="container ab-body">
+      <section className="containered ab-body">
         <div className="ab-grid">
           {/* LEFT: copy */}
           <article className="ab-copy">
@@ -114,7 +114,7 @@ export default function About() {
 {/* =========================
     “Book Your Perfect Accommodation” (feature row)
    ========================= */}
-<section className="container ab-features">
+<section className="containered ab-features">
   <header className="ab-sechead">
     <h3 className="ab-h3">Book Your Perfect Accommodation</h3>
     <p className="ab-sub">
@@ -159,7 +159,7 @@ export default function About() {
 
 
       {/* ========== 3 EASY STEPS (with arrow images) ========== */}
-      <section className="container ab-steps">
+      <section className="containered ab-steps">
         <header className="ab-sechead">
           <h3 className="ab-h3">Book Your Place in 3 Easy Steps</h3>
           <p className="ab-sub">From search to secure booking—made for international arrivals.</p>
@@ -202,7 +202,7 @@ export default function About() {
       </section>
 
       {/* ========== PROMOS: Agents & Students ========== */}
-      <section className="container ab-promos">
+      <section className="containered ab-promos">
         <div
           className="ab-promo ab-promo--left card"
           style={{ backgroundImage: `url(${agentImg})` }}

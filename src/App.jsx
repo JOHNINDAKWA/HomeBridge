@@ -25,10 +25,12 @@ import Settings from "./pages/Agent/Settings/Settings.jsx";
 
 import "./index.css";
 import AppDetail from "./pages/Agent/Applications/AppDetail/AppDetail.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 
 export default function App() {
   return (
     <div className="app">
+         <ScrollToTop />
       <Header />
       <main>
         <Routes>
