@@ -1,0 +1,112 @@
+/* Fullscreen overlay */
+.mega {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0,0,0,0.88);
+  color: #fff;
+
+  /* Center the content block both ways */
+  display: grid;
+  place-items: center;
+
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-6px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.mega.open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+/* Centered container with max width */
+.mega__inner {
+  position: relative;
+  width: min(1200px, 92vw);
+  /* Balanced 3-column layout, vertically centered */
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 0.95fr;
+  gap: 36px;
+  align-items: center; /* vertical centering within the block */
+}
+
+/* Close button */
+.mega__close {
+  position: absolute;
+  left: -4px;
+  top: -56px; /* sits above the centered block */
+  width: 44px; height: 44px;
+  display: grid; place-items: center;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.mega__close:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Left nav */
+.mega__nav {
+  display: grid;
+  gap: 12px;
+}
+.mega__nav a {
+  color: #fff;
+  font-size: clamp(22px, 2.4vw, 32px);
+  letter-spacing: .02em;
+  text-decoration: none;
+  transition: color .15s ease, transform .08s ease;
+}
+.mega__nav a:hover,
+.mega__nav a.active { color: var(--accent); transform: translateX(2px); }
+
+/* Middle image */
+.mega__showcase { display: grid; place-items: center; }
+.mega__img {
+  width: 100%;
+  height: clamp(280px, 46vh, 520px);
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,0.12);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.35);
+}
+
+/* Right contact/social */
+.mega__aside {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+.mega__aside h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  opacity: .86;
+}
+.mega__line {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 8px; opacity: .92;
+}
+.mega__icons { display: flex; gap: 12px; font-size: 18px; }
+.mega__icons a {
+  width: 36px; height: 36px; display: grid; place-items: center;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 50%;
+  color: #fff;
+  transition: border-color .15s ease, color .15s ease, transform .08s ease;
+}
+.mega__icons a:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+.mega__copy { opacity: .72; font-size: 12px; margin-top: 6px; }
+
+/* Responsive stacking (for mid-sized viewports; phones use MobileSidebar) */
+@media (max-width: 1080px) {
+  .mega__inner {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .mega__close { left: 0; top: -52px; }
+  .mega__nav { order: 1; }
+  .mega__showcase { order: 2; }
+  .mega__aside { order: 3; }
+}
+
+

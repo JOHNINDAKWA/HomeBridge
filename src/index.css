@@ -1,0 +1,148 @@
+/* Import Jost (weights 300–700) */
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Color system — soft, modern, slightly “girlish” */
+--brand: #14b8a6;        /* turquoise */
+--brand-600: #0d9488;
+--brand-700: #0f766e;
+--accent: #f97316;       /* coral/orange */
+--accent-600: #ea580c;
+
+
+
+
+  --ink: #1f2937;          /* neutral text */
+  --ink-soft: #4b5563;
+  --bg: #fff7fb;           /* blush background */
+  --card: #ffffff;
+  --border: #f1e6f1;
+
+  --success: #23a26d;
+  --warning: #e29d3e;
+  --danger: #d94f6a;
+
+  /* Elevation & shape */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --shadow: 0 6px 24px rgba(194, 109, 188, 0.15);
+
+  /* Typography & spacing */
+  --font: "Jost", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  --fs-sm: 0.9rem;
+  --fs: 1rem;
+  --fs-lg: 1.2rem;
+  --fs-xl: 1.6rem;
+  --fs-2xl: 2.2rem;
+
+  --space-1: 6px;
+  --space-2: 10px;
+  --space-3: 14px;
+  --space-4: 18px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: linear-gradient(180deg, #fffaff 0%, var(--bg) 100%);
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-5);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--brand);
+  color: #fff;
+  padding: 10px 16px;
+  border: 1px solid var(--brand-600);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+  white-space: nowrap;
+}
+.btn:hover { background: var(--brand-600); transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn--ghost { background: transparent; color: var(--brand); border-color: var(--brand); box-shadow: none; }
+.btn--light { background: #fff; color: var(--brand-700); border-color: var(--border); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.input, .select, .textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fff;
+  outline: none;
+  font: inherit;
+}
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(194, 109, 188, 0.15);
+}
+
+.section {
+  padding: var(--space-8) 0;
+}
+
+.grid {
+  display: grid;
+  gap: var(--space-5);
+}
+.grid--cards {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fee8f8;
+  color: var(--brand-700);
+  font-size: var(--fs-sm);
+  border: 1px solid var(--border);
+}
+
+
+
+
+/* global (index.css) */
+:root{
+  /* adjust this to your header’s real height on desktop; tweak in media queries */
+  --headerH: 72px;
+}
+
+html, body, #root { height: 100%; }
+
+/* stop using the flex “sticky footer” trick for this case */
+.app { min-height: 100svh; display: block; }
+
+/* main must consume (viewport - header), so footer is pushed below */
+.app > main {
+  min-height: calc(100svh - var(--headerH));
+}
+
+/* remove this if you added it earlier */
+.hb-footer { margin-top: 0; }

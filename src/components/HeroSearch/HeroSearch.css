@@ -1,0 +1,134 @@
+/* ===== HERO SEARCH — square, double bordered frame (frame is in Home.css) ===== */
+
+.hb-search {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1.6fr 1.8fr auto; /* 4 cells + CTA */
+  align-items: stretch;
+  gap: 0;                 /* no gaps; we draw dividers */
+  background: transparent;
+}
+
+
+/* Make the grid a positioned element so we can draw the top/bottom lines on it */
+.hb-search {
+  position: relative;
+  z-index: 2; /* above the vertical ::before but below dropdown menus */
+}
+
+/* Top horizontal inner line */
+.hb-search::before,
+.hb-search::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 1px;
+  background: #d8b887;
+  pointer-events: none;
+}
+
+/* top */
+.hb-search::before { top: 6px; }
+/* bottom */
+.hb-search::after  { bottom: 6px; }
+
+
+
+
+
+
+
+/* Each cell = label on top, control below (column layout) */
+.hb-search__cell {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto;
+  align-items: start;
+  padding: 14px 18px;
+  color: #fff;
+  border-right: 1px solid #d8b887;   /* vertical gold dividers */
+  min-width: 0;
+}
+.hb-search__cell:last-of-type { border-right: none; }
+.hb-search__cell--wide { min-width: 260px; }
+
+/* Label on top */
+.hb-search__label-inline,
+.hb-search__label {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .95;
+}
+
+/* Control below (fills width) */
+.hb-input,
+.hb-search__cell > :not(.hb-search__label-inline):not(.hb-search__label) {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+/* CTA (right column) — square & clean */
+.hb-search__cta {
+  padding: 0 22px;
+  color: #fff;
+  background: transparent;
+  font-weight: 600;
+  letter-spacing: .02em;
+  border: none;
+  border-left: 1px solid #d8b887;
+  cursor: pointer;
+  transition: background .15s ease, transform .08s ease;
+}
+.hb-search__cta:hover { background: rgba(216,184,135,.15); transform: translateY(-1px); }
+
+/* ===== TABLET ===== */
+@media (max-width: 1180px) {
+  .hb-search {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hb-search__cell {
+    border-right: none;
+    border-bottom: 1px solid #d8b887;  /* lined rows */
+  }
+  .hb-search__cta {
+    grid-column: 1 / -1;
+    border-left: none;
+    border-top: 1px solid #d8b887;
+    padding: 16px;
+  }
+}
+
+/* ===== PHONE (stacked like the reference) ===== */
+@media (max-width: 680px) {
+  .hb-search {
+    grid-template-columns: 1fr;
+  }
+  .hb-search__cell {
+    border-right: none;
+    border-top: 1px solid #d8b887;
+    border-bottom: 1px solid #d8b887;
+    padding: 16px;
+    background: rgba(0,0,0,0.28); /* subtle glass */
+  }
+  .hb-search__cell + .hb-search__cell { margin-top: 10px; }
+  .hb-search__cta {
+    width: 100%;
+    margin-top: 10px;
+    padding: 14px;
+    border: 1px solid #d8b887;
+    background: transparent;
+  }
+}
+
+/* Optional: elegant dropdown scrollbars */
+.hb-combo__menu,
+.hb-ms__list { scrollbar-width: thin; scrollbar-color: var(--accent) #111; }
+.hb-combo__menu::-webkit-scrollbar,
+.hb-ms__list::-webkit-scrollbar { width: 8px; }
+.hb-combo__menu::-webkit-scrollbar-track,
+.hb-ms__list::-webkit-scrollbar-track { background:#111; border-radius:10px; }
+.hb-combo__menu::-webkit-scrollbar-thumb,
+.hb-ms__list::-webkit-scrollbar-thumb { background:var(--accent); border-radius:10px; }

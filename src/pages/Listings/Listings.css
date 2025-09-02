@@ -1,0 +1,511 @@
+/* ===========================
+   HomeBridge — Listings (Light)
+   Namespaced with hbr- to avoid clashes
+   =========================== */
+
+:root {
+  --bg: #fff;
+  --panel: #f7f8fb;
+  --line: #e6e7eb;
+  --line-strong: #d4d6dd;
+  --fg: #26272b;
+  --muted: #6a6c73;
+
+  --brand: #c26dbc; /* headline accent */
+  --accent: #5cc6ba; /* CTA/controls */
+  --accent-600: #42a79d;
+  --gold: #d8b887; /* optional detail */
+}
+
+/* page shell */
+.hbr-listings {
+  background: var(--bg);
+  color: var(--fg);
+  padding: 34px 0 60px;
+
+  /* header heights for sticky sidebar calculations */
+  --headerH: 102px; /* adjust to your header */
+  --gapTop: 16px;
+}
+
+/* container to avoid global .container clashes */
+.hbr-container {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* two columns (desktop) */
+.hbr-listings__inner {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 28px;
+  align-items: start; /* don't stretch columns */
+}
+
+/* ===========================
+   Sidebar (desktop: sticky)
+   =========================== */
+
+.hbr-filter {
+  position: sticky;
+  top: calc(var(--headerH) + var(--gapTop));
+  max-height: calc(100vh - (var(--headerH) + var(--gapTop) + 20px));
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  display: grid;
+  gap: 18px;
+}
+
+.hbr-filter h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.hbr-field {
+  display: grid;
+  gap: 6px;
+}
+.hbr-field span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.hbr-field input,
+.hbr-field select {
+  height: 42px;
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 0 12px;
+  outline: none;
+  color: var(--fg);
+}
+.hbr-field--row {
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.hbr-filter__group {
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.hbr-filter__group h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--accent-600);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.hbr-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+}
+.hbr-check input {
+  accent-color: var(--accent);
+}
+
+/* Range */
+.hbr-range input {
+  width: 100%;
+}
+.hbr-range__meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-top: 6px;
+}
+.hbr-range__meta b {
+  font-weight: 700;
+  color: var(--fg);
+}
+
+/* ===========================
+   Header row (title + view + mobile filter toggle)
+   =========================== */
+
+.hbr-results__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 2px 0 10px;
+}
+.hbr-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.hbr-results__head h1 {
+  margin: 0;
+  font-size: clamp(22px, 2.2vw, 28px);
+  font-weight: 800;
+  color: var(--brand);
+}
+.hbr-count {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hbr-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hbr-filter-toggle {
+  display: none;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--accent);
+  color: var(--accent-600);
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.hbr-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+}
+.hbr-iconbtn {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--fg);
+  cursor: pointer;
+}
+.hbr-iconbtn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent-600);
+}
+
+/* ===========================
+   GRID view
+   =========================== */
+
+.hbr-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+@media (max-width: 1200px) {
+  .hbr-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .hbr-grid { grid-template-columns: 1fr; }
+}
+
+.hbr-card {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  gap: 0;
+}
+
+/* Media resets – make card images truly full-bleed */
+.hbr-card figure,
+.hbr-card__media,
+.hbr-card__media img {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.hbr-card__media {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16/10;
+  overflow: hidden;
+  line-height: 0; /* kills baseline sliver under images */
+}
+.hbr-card__media img {
+  display: block; /* removes inline image baseline */
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* edge-to-edge crop */
+  vertical-align: middle; /* older browser safety */
+}
+
+.hbr-ribbon {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 10px !important;
+  border-radius: 6px;
+}
+.hbr-like {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  color: #9aa;
+  cursor: pointer;
+}
+
+.hbr-card__meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.hbr-card__body {
+  padding: 12px 14px;
+  display: grid;
+  gap: 6px;
+}
+.hbr-pill {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #f2f2f7;
+  color: var(--muted);
+}
+.hbr-card__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.hbr-place {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+
+.hbr-card__foot {
+  padding: 12px 14px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.hbr-price b {
+  color: var(--brand);
+  font-size: 18px;
+}
+.hbr-btn {
+  height: 36px;
+  padding: 0 14px;           /* fixed: no oversized vertical padding */
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--accent-600);
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+   white-space: nowrap;
+}
+.hbr-btn--ghost:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ===========================
+   LIST view
+   =========================== */
+
+.hbr-list {
+  display: grid;
+  gap: 16px;
+}
+
+/* Desktop: image | content | aside */
+.hbr-rowcard {
+  display: grid;
+  grid-template-columns: 260px 1fr 180px;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.hbr-rowcard__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  aspect-ratio: 16/10;
+  display: block;
+}
+
+.hbr-rowcard__main {
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.hbr-rowcard__title {
+  margin: 0;
+  font-size: clamp(18px, 2vw, 20px);
+  font-weight: 800;
+  color: var(--brand);
+}
+.hbr-rowcard__sub {
+  display: flex;
+  gap: 10px 12px;
+  flex-wrap: wrap;
+  color: var(--muted);
+}
+.hbr-rowcard__blurb {
+  margin: 4px 0 0;
+  color: var(--fg);
+  font-size: 14px;
+}
+.hbr-rowcard__facts {
+  display: flex;
+  gap: 14px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+
+.hbr-rowcard__aside {
+  border-left: 1px solid var(--line);
+  display: grid;
+  align-content: center;
+  justify-items: end;
+  gap: 10px;
+  padding: 12px;
+}
+.hbr-rowcard__price {
+  text-align: right;
+}
+.hbr-rowcard__price b {
+  color: var(--accent-600);
+  font-size: 20px;
+}
+
+/* ===========================
+   RESPONSIVE TUNING
+   =========================== */
+
+/* 1200 ↓ : grid goes 2-up, rowcard tightens */
+@media (max-width: 1200px) {
+  .hbr-rowcard {
+    grid-template-columns: 240px 1fr 160px;
+  }
+}
+
+/* 1024 ↓ : collapse main grid to single column
+   (sidebar becomes a drawer below anyway) */
+@media (max-width: 1024px) {
+  .hbr-listings__inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 980 ↓ : drawer behavior already defined; also adjust list aside */
+@media (max-width: 980px) {
+  .hbr-filter-toggle { display: inline-flex; align-items: center; }
+
+  .hbr-filter {
+    position: fixed;
+    top: 4rem;
+    left: 0;
+    width: min(90vw, 420px);
+    max-height: none;
+    border-radius: 0 10px 10px 0;
+    transform: translateX(-105%);
+    transition: transform 0.25s ease;
+    z-index: 50;
+  }
+  .hbr-dim {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 49;
+  }
+  .filters-open .hbr-filter { transform: translateX(0); }
+  .filters-open .hbr-dim { opacity: 1; pointer-events: auto; }
+
+  /* list view: 2 columns (smaller image), aside drops below as a footer bar */
+  .hbr-rowcard {
+    grid-template-columns: 180px 1fr;
+  }
+  .hbr-rowcard__aside {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .hbr-rowcard__price { text-align: left; }
+}
+
+/* 700 ↓ : single column list items, image on top */
+@media (max-width: 700px) {
+  .hbr-rowcard {
+    grid-template-columns: 1fr;
+  }
+  .hbr-rowcard__img {
+    height: auto;
+  }
+  .hbr-rowcard__main {
+    padding: 12px 12px 0;
+  }
+  .hbr-rowcard__aside {
+    padding: 12px;
+    border-top: 1px solid var(--line);
+  }
+
+  /* controls condense */
+  .hbr-display span { display: none; }
+  .hbr-iconbtn { width: 34px; height: 34px; }
+}
+
+/* 420 ↓ : buttons full width for easy tapping */
+@media (max-width: 420px) {
+  .hbr-btn {
+    width: 100%;
+    height: 40px;
+  }
+  .hbr-rowcard__aside {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+}

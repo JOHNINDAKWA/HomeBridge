@@ -1,0 +1,93 @@
+
+// src/pages/Agent/Agent.jsx
+import { useState, useEffect } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import {
+  FiPlus, FiList, FiInbox, FiMessageSquare, FiDollarSign, FiSettings, FiBarChart2, FiMenu, FiX
+} from "react-icons/fi";
+import "./Agent.css";
+
+export default function Agent() {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  // Close drawer when route changes (best effort)
+  useEffect(() => {
+    const close = () => setOpen(false);
+    window.addEventListener("hashchange", close);
+    return () => window.removeEventListener("hashchange", close);
+  }, []);
+
+  // Close on ESC
+  useEffect(() => {
+    function onKey(e){ if (e.key === "Escape") setOpen(false); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  return (
+    <section className="ag-wrap section">
+      <div className="container ag-shell card">
+        {/* Mobile top bar */}
+        <div className="ag-mobilebar">
+          <button
+            className="btn btn--light ag-menubtn"
+            type="button"
+            aria-label="Open menu"
+            aria-expanded={open}
+            onClick={() => setOpen(true)}
+          >
+            <FiMenu /> Menu
+          </button>
+          <button
+            className="btn"
+            type="button"
+            onClick={() => navigate("listings/new")}
+          >
+            <FiPlus /> New listing
+          </button>
+        </div>
+
+        {/* Sidebar */}
+        <aside className={`ag-nav ${open ? "is-open" : ""}`} aria-label="Agent navigation">
+          <div className="ag-nav__head">
+            <h2 className="ag-title">Partner Console</h2>
+            <button
+              className="ag-close"
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setOpen(false)}
+            >
+              <FiX />
+            </button>
+          </div>
+
+          <nav onClick={() => setOpen(false)}>
+            <NavLink to="overview"><FiBarChart2 /> Overview</NavLink>
+            <NavLink to="listings"><FiList /> Listings</NavLink>
+            <NavLink to="applications"><FiInbox /> Applications</NavLink>
+            <NavLink to="messages"><FiMessageSquare /> Messages</NavLink>
+            <NavLink to="payouts"><FiDollarSign /> Payouts</NavLink>
+            <NavLink to="settings"><FiSettings /> Settings</NavLink>
+          </nav>
+
+          <button className="btn ag-new" onClick={() => { setOpen(false); navigate("listings/new"); }}>
+            <FiPlus /> New listing
+          </button>
+        </aside>
+
+        {/* Backdrop for drawer */}
+        <div
+          className={`ag-dim ${open ? "show" : ""}`}
+          aria-hidden={!open}
+          onClick={() => setOpen(false)}
+        />
+
+        {/* Main */}
+        <main className="ag-main">
+          <Outlet />
+        </main>
+      </div>
+    </section>
+  );
+}

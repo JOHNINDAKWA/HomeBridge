@@ -1,0 +1,39 @@
+.hb-combo { position: relative; width: 100%; }
+
+.hb-combo__control {
+  display: flex; align-items: center;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(216,184,135,.6);
+  border-radius: 0;              /* no rounding */
+  height: 42px;
+  padding: 0 36px 0 12px;
+  cursor: text;
+}
+.hb-combo__control.open { background: rgba(0,0,0,0.45); }
+
+.hb-combo__input {
+  flex: 1; min-width: 0;
+  background: transparent;
+  border: 0; outline: none;
+  color: #fff;
+  font: inherit;
+}
+.hb-combo__clear {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; display: grid; place-items: center;
+  color: #ddd; background: transparent; border: 0; cursor: pointer;
+}
+
+.hb-combo__menu {
+  position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+  background: #0f1114;
+  border: 1px solid rgba(216,184,135,.6);
+  border-radius: 0;
+  max-height: 240px; overflow: auto; z-index: 20;
+}
+.hb-combo__option {
+  padding: 10px 12px; color: #f2f3f5; cursor: pointer;
+}
+.hb-combo__option:hover,
+.hb-combo__option.active { background: rgba(216,184,135,.12); }
+.hb-combo__empty { padding: 12px; color: #9aa0a6; }

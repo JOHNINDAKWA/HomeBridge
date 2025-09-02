@@ -1,0 +1,181 @@
+/* ===== Variables (uses your palette if defined) ===== */
+:root{
+  --ink:#0f1216;
+  --glass:rgba(12,14,16,.48);
+  --line:rgba(255,255,255,.18);
+  --gold:#d8b887;
+  --brand: var(--brand, #1e3a8a);
+  --accent: var(--accent, #fbbf24);
+}
+
+/* Utility strip (desktop only) */
+.hb-util {
+  display:none;
+  background:#0b0e12;
+  color:rgba(255,255,255,.75);
+  font-size:13px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+@media (min-width:1100px){
+  .hb-util{ display:block; }
+}
+.hb-util__inner{
+  max-width:1180px; margin:0 auto; padding:8px 20px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+.hb-util__left, .hb-util__right{ display:flex; align-items:center; gap:10px; }
+.hb-util a{ color:#fff; text-decoration:none; opacity:.85; }
+.hb-util a:hover{ opacity:1; }
+
+/* ===== Main header ===== */
+.hb-header{
+  position:sticky; top:0; z-index:40;
+  backdrop-filter:saturate(140%) blur(8px);
+  background:linear-gradient( to bottom, rgba(10,12,15,.84), rgba(10,12,15,.62) );
+  border-bottom:1px solid rgba(255,255,255,.06);
+  transition: transform .25s ease, background .2s ease, border-color .2s ease;
+}
+.hb-header.is-scrolled{
+  background:rgba(10,12,15,.86);
+  border-color: rgba(255,255,255,.10);
+}
+
+.hb-header__inner{
+  max-width:1180px; margin:0 auto; padding:14px 20px;
+  display:grid; grid-template-columns:auto 1fr auto; gap:16px; align-items:center;
+}
+
+/* Left: burger + brand */
+.hb-burger{
+  display:inline-grid; place-items:center;
+  width:36px;height:36px; border:0; background:transparent; color:#fff;
+  margin-right:6px; cursor:pointer;
+}
+
+.hb-burger svg{
+  font-size: 30px;
+}
+/* @media (min-width:1100px){ .hb-burger{ display:none; } } */
+
+.hb-brand{
+  display:flex; align-items:center; gap:10px; text-decoration:none;
+}
+.hb-logo{
+  width:36px;height:36px; display:grid; place-items:center; color:#0b0e12;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  font-weight:800; border:1px solid rgba(255,255,255,.12);
+}
+.hb-word{
+  font-weight:700; letter-spacing:.06em; color:#fff;
+}
+.hb-word span{ color:var(--accent); }
+
+/* Center: nav (desktop) */
+.hb-nav{ display:none; position:relative; justify-self:center; }
+@media (min-width:1100px){
+  .hb-nav{ display:flex; gap:18px; }
+}
+.hb-nav__link{
+  position:relative; color:rgba(255,255,255,.9); text-decoration:none;
+  padding:8px 6px; font-weight:600;
+}
+.hb-nav__link:hover{ color:#fff; }
+.hb-nav__link.is-active{ color:var(--accent); }
+
+/* animated underline bar */
+.hb-underline{
+  position:absolute; bottom:0; left:0; height:2px; width:0;
+  background:linear-gradient(90deg, var(--accent), var(--brand));
+  transition: transform .18s ease, width .18s ease, left .18s ease;
+}
+@media (min-width:1100px){
+  .hb-nav:hover .hb-underline{ width:0; } /* reset */
+  .hb-nav__link.is-active ~ .hb-underline{
+    /* JS-free underline: measure active link with CSS tricks */
+    /* We’ll expand to full nav width when active; simple, clean focus cue */
+    width:100%;
+    left:0;
+    background:linear-gradient(90deg, var(--brand), var(--accent));
+    opacity:.25;
+  }
+}
+
+/* Right: actions */
+.hb-right{ display:flex; align-items:center; gap:10px; justify-self:end; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center;
+  height:36px; padding:0 14px; font-weight:700; letter-spacing:.02em;
+  border:1px solid rgba(255,255,255,.18); color:#fff; text-decoration:none;
+  background:transparent; cursor:pointer;
+}
+.btn--ghost:hover{ background:rgba(255,255,255,.06); }
+.btn--primary{
+  border-color:transparent; color:#0b0e12;
+  background:linear-gradient(135deg, var(--brand), var(--accent));
+}
+.btn--primary:hover{ filter:brightness(1.05); }
+
+/* Container helper (if not defined globally) */
+.container{ width:100%; max-width:1180px; margin:0 auto; }
+
+
+/* ===== spacing fixes ===== */
+
+/* prevent global resets from collapsing text height */
+.hb-header,
+.hb-header * ,
+.hb-util,
+.hb-util * {
+  line-height: 1.2;
+}
+
+/* utility strip height + padding */
+.hb-util__inner{
+  padding: 10px 24px;           /* was 8px 20px */
+  gap: 20px;                    /* a bit more breathing room */
+  min-height: 36px;
+}
+
+/* main header interior spacing */
+.hb-header__inner{
+  padding: 16px 24px;           /* was 14px 20px */
+  gap: 24px;                    /* grid column gap */
+  min-height: 64px;             /* guarantees vertical room */
+}
+
+/* brand spacing */
+.hb-left{ display:flex; align-items:center; gap:12px; }
+.hb-logo{ width:40px; height:40px; }   /* slightly larger block */
+.hb-word{ font-size: 18px; }           /* readable but compact */
+
+/* nav spacing */
+.hb-nav{ gap: 26px; }                  /* space between links */
+.hb-nav__link{ padding: 10px 8px; }    /* clickable area */
+
+/* right-side actions spacing */
+.hb-right{ gap: 12px; }
+.btn{ height: 40px; padding: 0 16px; } /* bigger tap target */
+.btn--ghost{ border-width: 1px; }
+.btn--primary{ border-width: 1px; }
+
+/* larger screens: a touch more */
+@media (min-width: 1280px){
+  .hb-header__inner{ padding: 18px 28px; }
+  .hb-nav{ gap: 32px; }
+}
+
+/* small screens: don’t crush the height */
+@media (max-width: 1099px){
+  .hb-header__inner{
+    grid-template-columns: 1fr auto;   /* brand + actions */
+    gap: 16px;
+    min-height: 60px;
+  }
+  .hb-right .btn{ height: 38px; padding: 0 14px; }
+}
+
+@media (max-width: 600px){
+  .hb-right .btn-right{
+    display: none;
+  }
+}
