@@ -1,0 +1,15 @@
+/* booking.css (or add to your index.css) */
+.booking { display: grid; gap: 16px; }
+.booking__head h1 { margin: 0; }
+.booking .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.booking label { display: grid; gap: 6px; }
+.booking input, .booking textarea { padding: 10px; border: 1px solid var(--border); border-radius: 8px; }
+.booking__nav { display: flex; gap: 10px; justify-content: flex-end; }
+.summary { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 4px; }
+
+.doclib__bar { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.doclib__grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.doc { display: grid; gap: 6px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; }
+.doc.is-selected { outline: 2px solid var(--brand-600); }
+.doc__name { font-weight: 600; }
+.doc__meta { font-size: 12px; color: var(--muted); }

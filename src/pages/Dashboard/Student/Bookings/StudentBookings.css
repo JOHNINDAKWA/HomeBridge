@@ -1,0 +1,25 @@
+.sdb-panel { padding: 18px; display: grid; gap: 16px; }
+.sdb-head h2 { margin: 0; }
+.sdb-empty { padding: 22px; border: 1px dashed rgba(1,161,161,.28); background: rgba(1,161,161,.03); border-radius: 16px; text-align: center; }
+
+
+.sdb-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.sdb-item { padding: 14px; border-radius: 14px; border:1px solid var(--border,#e6e8ec); background:#fff; }
+.sdb-row { display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px; gap: 10px; }
+.sdb-id { font-size: 12.5px; color:#667085; }
+
+
+.sdb-grid { display:grid; gap:10px; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); margin:6px 0 10px; }
+.sdb-grid span { font-size:12px; color:#667085; display:block; }
+
+
+.sdb-actions { display:flex; align-items:center; gap:10px; }
+.sdb-link { display:inline-flex; align-items:center; gap:6px; color:#0f766e; background:transparent; border:0; cursor:pointer; }
+.sdb-link.alt { color:#6b7280; }
+.sdb-dot { width:4px; height:4px; background:#cbd5e1; border-radius:999px; }
+
+
+.sdb-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; font-size:12.5px; font-weight:600; border:1px solid; }
+.sdb-chip[data-status="Upcoming"]{ color:#0f766e; background:rgba(1,161,161,.08); border-color:rgba(1,161,161,.25); }
+.sdb-chip[data-status="Active"]{ color:#1f4e46; background:rgba(16,185,129,.12); border-color:rgba(16,185,129,.28); }
+.sdb-chip[data-status="Past"]{ color:#92400e; background:rgba(251,191,36,.18); border-color:rgba(251,191,36,.38); }

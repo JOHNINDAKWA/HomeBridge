@@ -1,0 +1,29 @@
+.sdl-wrap { display: grid; gap: 20px; padding: var(--space-6, 20px);
+  background: radial-gradient(1000px 600px at -10% -10%, rgba(1,161,161,.10), transparent 60%),
+              radial-gradient(900px 500px at 120% 10%, rgba(1,161,161,.08), transparent 60%);
+}
+.card { background: rgba(255,255,255,.92); border: 1px solid var(--border,#e6e8ec); border-radius: 16px; box-shadow: 0 10px 30px rgba(16,24,40,.06); }
+
+.sdl-hero { padding: 18px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.sdl-muted { color: #667085; }
+
+.sdl-stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+@media (max-width: 900px){ .sdl-stats { grid-template-columns: 1fr; } }
+.sdl-stat { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 14px; border-radius: 16px; background: #fff; }
+.sdl-stat__icon { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(1,161,161,.10); color: #0f766e; font-size: 20px; }
+.sdl-stat__meta strong { font-size: 20px; display: block; line-height: 1.2; }
+.sdl-progress { grid-column: 1 / -1; height: 8px; border-radius: 999px; background: #eef2f7; overflow: hidden; }
+.sdl-progress span { display: block; height: 100%; background: linear-gradient(90deg, #00b2b2, #0ea5a4); }
+
+.sdl-grid { display: grid; grid-template-columns: 260px 1fr; gap: 20px; }
+@media (max-width: 1000px){ .sdl-grid { grid-template-columns: 1fr; } }
+.sdl-side { position: sticky; top: calc(var(--headerH,72px) + 12px); align-self: start; padding: 14px; }
+.sdl-tabs { display: grid; gap: 8px; }
+.sdl-tab { display: inline-flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border,#e6e8ec); background:#fff; color:#0b3f3c; text-decoration: none; }
+.sdl-tab.is-active { background: linear-gradient(180deg,#00b2b2,#019191); color:#fff; border-color: transparent; box-shadow: 0 10px 20px rgba(1,161,161,.18); }
+.sdl-side__hint { margin-top: 10px; font-size: 12.5px; color: #667085; }
+
+.sdl-main { display: grid; gap: 18px; }
+
+.btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:12px; border:1px solid transparent; background:linear-gradient(180deg,#00b2b2,#019191); color:#fff; font-weight:600; box-shadow:0 10px 20px rgba(1,161,161,.18); cursor:pointer; }
+.btn--light { background:#fff; color:#0f766e; border-color:rgba(1,161,161,.26); box-shadow:0 8px 18px rgba(1,161,161,.08); }

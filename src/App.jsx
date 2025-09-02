@@ -1,3 +1,4 @@
+// App.jsx
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/Header/Header.jsx";
 import Footer from "./components/Footer/Footer.jsx";
@@ -22,15 +23,22 @@ import Applications from "./pages/Agent/Applications/Applications.jsx";
 import Messages from "./pages/Agent/Messages/Messages.jsx";
 import Payouts from "./pages/Agent/Payouts/Payouts.jsx";
 import Settings from "./pages/Agent/Settings/Settings.jsx";
+import AppDetail from "./pages/Agent/Applications/AppDetail/AppDetail.jsx";
+
+import ScrollToTop from "./components/ScrollToTop.jsx";
+import BookingFlow from "./pages/Booking/BookingFlow/BookingFlow.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
 
 import "./index.css";
-import AppDetail from "./pages/Agent/Applications/AppDetail/AppDetail.jsx";
-import ScrollToTop from "./components/ScrollToTop.jsx";
+import StudentBookings from "./pages/Dashboard/Student/Bookings/StudentBooking.jsx";
+import StudentDocuments from "./pages/Dashboard/Student/Documents/StudentDocuments.jsx";
+import StudentProfile from "./pages/Dashboard/Student/Profile/StudentProfile.jsx";
+import StudentLayout from "./pages/Dashboard/Student/StudentLayout/StudentLayout.jsx";
 
 export default function App() {
   return (
     <div className="app">
-         <ScrollToTop />
+      <ScrollToTop />
       <Header />
       <main>
         <Routes>
@@ -43,11 +51,36 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
+          {/* Booking flow — top-level, protected */}
+          <Route
+            path="/book/:listingId"
+            element={
+              <RequireAuth>
+                <BookingFlow />
+              </RequireAuth>
+            }
+          />
+
           {/* Dashboards */}
           <Route path="/dashboard">
-            <Route path="student" element={<StudentDashboard />} />
+            {/* Student dashboard (protected) */}
+
+            <Route
+              path="student"
+              element={
+                <RequireAuth>
+                  <StudentLayout />
+                </RequireAuth>
+              }
+            >
+              <Route index element={<StudentBookings />} />
+              <Route path="bookings" element={<StudentBookings />} />
+              <Route path="documents" element={<StudentDocuments />} />
+              <Route path="profile" element={<StudentProfile />} />
+            </Route>
+
+            {/* Agent console (children render inside <Outlet /> in Agent.jsx) */}
             <Route path="agent" element={<Agent />}>
-              {/* Agent nested routes render inside <Outlet /> in Agent.jsx */}
               <Route index element={<Overview />} />
               <Route path="overview" element={<Overview />} />
               <Route path="listings">
@@ -56,11 +89,8 @@ export default function App() {
                 <Route path=":id/edit" element={<ListingForm mode="edit" />} />
               </Route>
               <Route path="applications" element={<Applications />} />
-              <Route
-                path="/dashboard/agent/applications/:appId"
-                element={<AppDetail />}
-              />
-
+              {/* make this child path RELATIVE */}
+              <Route path="applications/:appId" element={<AppDetail />} />
               <Route path="messages" element={<Messages />} />
               <Route path="payouts" element={<Payouts />} />
               <Route path="settings" element={<Settings />} />
