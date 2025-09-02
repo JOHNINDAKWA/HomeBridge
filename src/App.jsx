@@ -12,8 +12,6 @@ import Register from "./pages/Auth/Register.jsx";
 import NotFound from "./pages/NotFound/NotFound.jsx";
 import About from "./pages/About/About.jsx";
 
-import StudentDashboard from "./pages/Dashboard/StudentDashboard/StudentDashboard.jsx";
-
 // Agent console + children
 import Agent from "./pages/Agent/Agent.jsx";
 import Overview from "./pages/Agent/Overview/Overview.jsx";

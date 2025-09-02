@@ -1,25 +1,19 @@
+// src/pages/Auth/Register.jsx
 import { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
-  FiUser,
-  FiMail,
-  FiLock,
-  FiMapPin,
-  FiCalendar,
-  FiBriefcase,
-  FiShield,
-  FiGlobe,
-  FiArrowRight,
-  FiCheckCircle,
+  FiUser, FiMail, FiLock, FiMapPin, FiCalendar, FiBriefcase,
+  FiShield, FiGlobe, FiArrowRight, FiCheckCircle
 } from "react-icons/fi";
 import { FaUniversity } from "react-icons/fa";
+import { useAuth } from "../../Context/AuthContext.jsx"; // ✅ add this
 import "./Register.css";
-
 
 import registerSideImg from "../../assets/images/register-side.jpg";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { login, setProfile } = useAuth(); // ✅ add this
   const [role, setRole] = useState("student"); // "student" | "agent"
   const [form, setForm] = useState({
     first: "",
@@ -37,65 +31,83 @@ export default function Register() {
   });
 
   const canSubmit = useMemo(() => {
-    // minimal validation demo: adjust to real rules later
     if (!form.email || !form.password || !form.terms) return false;
-    if (role === "student") {
-      return !!(form.first && form.last);
-    } else {
-      return !!(form.company && form.first && form.last && form.kycAck);
-    }
+    if (role === "student") return !!(form.first && form.last);
+    return !!(form.company && form.first && form.last && form.kycAck);
   }, [form, role]);
 
   function update(key, val) {
     setForm((f) => ({ ...f, [key]: val }));
   }
 
-  // Placeholder OAuth handlers — integrate with your auth later
-  const handleGoogleRegister = () => {
-    // TODO: plug in Firebase/Auth0/Supabase/etc
-    // Example route decisions after successful Google auth:
-    if (role === "student") navigate("/onboarding/student");
-    else navigate("/onboarding/agent");
+  // Build a student profile object from the form
+  const buildStudentProfile = () => ({
+    fullName: `${form.first} ${form.last}`.trim(),
+    email: form.email,
+    school: form.university || "",
+    program: "", // you can add a field for this later in the form if needed
+    phone: "",   // optional field you may add to the form
+    targetCity: form.targetCity || "",
+    intake: form.intake || "",
+  });
+
+  // OAuth register
+  const handleGoogleRegister = async () => {
+    if (role === "student") {
+      await login(form.email || "student@example.com", "oauth", "student");
+      setProfile((p) => ({ ...p, ...buildStudentProfile() }));
+      navigate("/dashboard/student/profile", { replace: true });
+    } else {
+      await login(form.email || "agent@example.com", "oauth", "agent");
+      navigate("/dashboard/agent/overview", { replace: true });
+    }
   };
 
-  const handleEmailRegister = (e) => {
+  // Email/password register
+  const handleEmailRegister = async (e) => {
     e.preventDefault();
     if (!canSubmit) return;
-    // TODO: submit form to API
-    if (role === "student") navigate("/onboarding/student");
-    else navigate("/onboarding/agent");
+
+    // TODO: send to your real API; on success:
+    if (role === "student") {
+      await login(form.email, form.password, "student");
+      setProfile((p) => ({ ...p, ...buildStudentProfile() }));
+      navigate("/dashboard/student/profile", { replace: true }); // 👈 lands on details
+    } else {
+      await login(form.email, form.password, "agent");
+      navigate("/dashboard/agent/overview", { replace: true });
+    }
   };
 
   return (
     <section className="rg-wrap section">
       <div className="container rg-shell">
         {/* LEFT: Art / pitch */}
-     <aside
-  className="rg-side rg-side--photo card"
-  style={{
-    // multi-layer: the photo at the bottom, then gentle white + brand veils on top
-    backgroundImage: `
-      linear-gradient(90deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.72) 55%, rgba(255,255,255,.38) 75%, rgba(255,255,255,0) 100%),
-      radial-gradient(80% 60% at 10% 0%, rgba(20,184,166,.10) 0%, rgba(20,184,166,0) 70%),
-      url(${registerSideImg})
-    `,
-  }}
->
-  <div className="rg-side__badge">New here?</div>
-  <h1 className="rg-side__title">Create your HomeBridge account</h1>
-  <p className="rg-side__p">
-    One account to book verified housing before you land. Payments are escrowed,
-    documents secured, and every step leaves an audit trail.
-  </p>
-  <ul className="rg-side__points">
-    <li><FiCheckCircle /> Verified listings & partners</li>
-    <li><FiCheckCircle /> Escrowed payments & clear refunds</li>
-    <li><FiCheckCircle /> Document vault & e-sign</li>
-  </ul>
-  <div className="rg-side__note">
-    Already have an account? <Link to="/login" className="rg-link">Log in</Link>
-  </div>
-</aside>
+        <aside
+          className="rg-side rg-side--photo card"
+          style={{
+            backgroundImage: `
+              linear-gradient(90deg, rgba(255,255,255,.92) 0%, rgba(255,255,255,.72) 55%, rgba(255,255,255,.38) 75%, rgba(255,255,255,0) 100%),
+              radial-gradient(80% 60% at 10% 0%, rgba(20,184,166,.10) 0%, rgba(20,184,166,0) 70%),
+              url(${registerSideImg})
+            `,
+          }}
+        >
+          <div className="rg-side__badge">New here?</div>
+          <h1 className="rg-side__title">Create your HomeBridge account</h1>
+          <p className="rg-side__p">
+            One account to book verified housing before you land. Payments are escrowed,
+            documents secured, and every step leaves an audit trail.
+          </p>
+          <ul className="rg-side__points">
+            <li><FiCheckCircle /> Verified listings & partners</li>
+            <li><FiCheckCircle /> Escrowed payments & clear refunds</li>
+            <li><FiCheckCircle /> Document vault & e-sign</li>
+          </ul>
+          <div className="rg-side__note">
+            Already have an account? <Link to="/login" className="rg-link">Log in</Link>
+          </div>
+        </aside>
 
         {/* RIGHT: Form */}
         <main className="rg-main card">

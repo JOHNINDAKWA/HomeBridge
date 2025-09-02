@@ -17,12 +17,12 @@ export function AuthProvider({ children }) {
   useEffect(() => { localStorage.setItem("auth:profile", JSON.stringify(profile)); }, [profile]);
   useEffect(() => { localStorage.setItem("auth:documents", JSON.stringify(documents)); }, [documents]);
 
-  const login = async (email, password) => {
-    // mock user until backend is ready
-    const mock = { id: "u_1", email, role: "student" };
-    setUser(mock);
-    return mock;
-  };
+const login = async (email, password, role = "student") => {
+  // FRONTEND-ONLY MOCK: Replace with real API later
+  const mockUser = { id: "u_" + Date.now(), role, email };
+  setUser(mockUser);
+  return mockUser;
+};
   const logout = () => setUser(null);
 
   const value = useMemo(() => ({ user, login, logout, profile, setProfile, documents, setDocuments }), [user, profile, documents]);

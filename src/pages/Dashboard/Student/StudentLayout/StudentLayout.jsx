@@ -41,7 +41,7 @@ export default function StudentLayout(){
       <header className="sdl-hero card">
         <div>
           <h1>Welcome{profile?.fullName ? `, ${profile.fullName.split(" ")[0]}` : ""} 👋</h1>
-          <p className="sdl-muted">Manage bookings, documents, and your profile—all in one place.</p>
+          <p className="sdl-muted">Manage bookings, documents, and your profile, all in one place.</p>
         </div>
         <div>
           <button className="btn btn--light" onClick={() => navigate("/listings")}>
