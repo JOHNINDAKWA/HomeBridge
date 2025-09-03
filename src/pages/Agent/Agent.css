@@ -5,6 +5,7 @@
   gap: 20px;
   padding: var(--space-6);
   position: relative; /* for drawer backdrop stacking */
+  overflow: hidden;
 }
 
 /* Sticky sidebar (desktop) */
@@ -39,7 +40,7 @@
 .ag-new { width: 100%; margin-top: 8px; }
 
 /* Main area */
-.ag-main { padding: var(--space-6); display: grid; gap: var(--space-5); }
+.ag-main { padding: var(--space-6); display: grid; gap: var(--space-5);overflow: hidden; }
 
 /* Mobile bar (only visible on small screens) */
 .ag-mobilebar {
