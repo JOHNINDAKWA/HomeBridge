@@ -4,12 +4,17 @@
   grid-template-columns: 260px 1fr;
   gap: 20px;
   padding: var(--space-6);
-  position: relative; /* for drawer backdrop stacking */
-  overflow: hidden;
+  position: relative;
+  /* Fix: This is the key change.
+     It prevents any children (like a hidden drawer)
+     from causing horizontal overflow. */
+  overflow-x: hidden;
 }
 
 /* Sticky sidebar (desktop) */
-:root { --headerH: 72px; }
+:root {
+  --headerH: 72px;
+}
 .ag-nav {
   position: sticky;
   top: calc(var(--headerH) + 12px);
@@ -23,24 +28,56 @@
   z-index: 20;
 }
 .ag-nav__head {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 .ag-close {
-  display: none; /* mobile-only button, revealed below */
-  background: transparent; border: 0; cursor: pointer; font-size: 22px; line-height: 1;
+  display: none;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
 }
 
-.ag-title { margin: 0 0 12px; font-size: 18px; font-weight: 700; color: var(--brand-700); }
-.ag-nav nav { display: grid; gap: 8px; margin: 10px 0 12px; }
-.ag-nav a {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 12px; border-radius: 10px; color: var(--ink); text-decoration: none;
+.ag-title {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brand-700);
 }
-.ag-nav a.active { background: #fff; border: 1px solid var(--border); box-shadow: var(--shadow); }
-.ag-new { width: 100%; margin-top: 8px; }
+.ag-nav nav {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 12px;
+}
+.ag-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.ag-nav a.active {
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+.ag-new {
+  width: 100%;
+  margin-top: 8px;
+}
 
 /* Main area */
-.ag-main { padding: var(--space-6); display: grid; gap: var(--space-5);overflow: hidden; }
+.ag-main {
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-5);
+}
 
 /* Mobile bar (only visible on small screens) */
 .ag-mobilebar {
@@ -51,23 +88,34 @@
   gap: 10px;
   margin-bottom: 10px;
 }
-.ag-menubtn { display: inline-flex; align-items: center; gap: 8px; }
+.ag-menubtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 
 /* Drawer backdrop */
 .ag-dim {
-  position: fixed; inset: 0; background: rgba(0,0,0,.35);
-  opacity: 0; pointer-events: none; transition: opacity .25s ease;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
   z-index: 15;
 }
-.ag-dim.show { opacity: 1; pointer-events: auto; }
+.ag-dim.show {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 /* ============ Responsive drawer behavior ============ */
-@media (max-width: 960px){
+@media (max-width: 960px) {
   .ag-shell {
-    grid-template-columns: 1fr; /* stack */
+    grid-template-columns: 1fr;
   }
   .ag-mobilebar {
-    display: flex; /* show mobile top bar */
+    display: flex;
   }
   .ag-main {
     padding: var(--space-5);
@@ -77,25 +125,33 @@
   .ag-nav {
     position: fixed;
     top: calc(var(--headerH) + 8px);
-    left: 0; bottom: 0;
+    left: 0;
+    bottom: 0;
     width: min(88vw, 360px);
     max-height: none;
     border-right: 0;
     border-radius: 0 var(--radius) var(--radius) 0;
     transform: translateX(-105%);
     transition: transform .25s ease;
-    box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .25);
   }
   .ag-nav.is-open {
     transform: translateX(0);
   }
-  .ag-close { display: inline-grid; place-items: center; }
+  .ag-close {
+    display: inline-grid;
+    place-items: center;
+  }
 
   /* Disable sticky in drawer mode */
-  .ag-nav { top: 0; }
+  .ag-nav {
+    top: 0;
+  }
 }
 
 /* If your header is taller/shorter at breakpoints, update the var */
-@media (max-width: 640px){
-  :root { --headerH: 56px; }
+@media (max-width: 640px) {
+  :root {
+    --headerH: 56px;
+  }
 }
