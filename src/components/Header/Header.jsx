@@ -15,8 +15,8 @@ export default function Header() {
     { to: "/", label: "Home" },
     { to: "/about", label: "About" },
     { to: "/listings", label: "Listings" },
+    { to: "/blog", label: "Blog" },
     { to: "/support", label: "Support" },
-    { to: "/contact", label: "Contact" },
   ];
 
   // lock scroll when overlay open

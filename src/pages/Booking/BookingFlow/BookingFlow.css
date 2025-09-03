@@ -195,6 +195,8 @@
   background: #f7fbfb; border: 1px solid #e4f4f4; padding: 10px 12px; border-radius: 10px;
 }
 
+
+
 /* ====== DocumentPicker niceties (optional if your picker already styles) ====== */
 .doclib__bar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .doclib__grid {

@@ -33,6 +33,14 @@ import StudentDocuments from "./pages/Dashboard/Student/Documents/StudentDocumen
 import StudentProfile from "./pages/Dashboard/Student/Profile/StudentProfile.jsx";
 import StudentLayout from "./pages/Dashboard/Student/StudentLayout/StudentLayout.jsx";
 
+
+import Disclaimer from "./pages/Legal/Disclaimer/Disclaimer.jsx";
+import PrivacyPolicy from "./pages/Legal/Privacy/PrivacyPolicy.jsx";
+import TermsOfUse from "./pages/Legal/Terms/TermsOfUse.jsx";
+import BookingDetail from "./pages/Dashboard/Student/BookingDetail/BookingDetail.jsx";
+import Support from "./pages/Support/Support.jsx";
+import Blog from "./pages/Blog/Blog.jsx";
+
 export default function App() {
   return (
     <div className="app">
@@ -45,9 +53,14 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/listings" element={<Listings />} />
           <Route path="/listings/:id" element={<ListingDetails />} />
-          <Route path="/documents" element={<Documents />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/support" element={<Support />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+
+          <Route path="/legal/disclaimer" element={<Disclaimer />} />
+          <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+          <Route path="/legal/terms" element={<TermsOfUse />} />
 
           {/* Booking flow — top-level, protected */}
           <Route
@@ -73,6 +86,7 @@ export default function App() {
             >
               <Route index element={<StudentBookings />} />
               <Route path="bookings" element={<StudentBookings />} />
+              <Route path="bookings/:bookingId" element={<BookingDetail />} />
               <Route path="documents" element={<StudentDocuments />} />
               <Route path="profile" element={<StudentProfile />} />
             </Route>

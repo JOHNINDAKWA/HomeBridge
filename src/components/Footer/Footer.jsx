@@ -67,13 +67,13 @@ export default function Footer() {
           <h4 className="hb-footer__sub">Legal</h4>
           <ul>
             <li>
-              <Link to="/privacy">Privacy Policy</Link>
+              <Link to="legal/privacy">Privacy Policy</Link>
             </li>
             <li>
-              <Link to="/terms">Terms of Use</Link>
+              <Link to="legal/terms">Terms of Use</Link>
             </li>
             <li>
-              <Link to="/disclaimer">Disclaimer</Link>
+              <Link to="legal/disclaimer">Disclaimer</Link>
             </li>
           </ul>
         </nav>
@@ -135,11 +135,11 @@ export default function Footer() {
         <div className="container hb-footer__barin">
           <p>© {new Date().getFullYear()} HomeBridge. All rights reserved.</p>
           <div className="hb-footer__links">
-            <Link to="/privacy">Privacy</Link>
+            <Link to="legal/privacy">Privacy</Link>
             <span>•</span>
-            <Link to="/terms">Terms</Link>
+            <Link to="legal/terms">Terms</Link>
             <span>•</span>
-            <Link to="/disclaimer">Disclaimer</Link>
+            <Link to="legal/disclaimer">Disclaimer</Link>
           </div>
         </div>
       </div>

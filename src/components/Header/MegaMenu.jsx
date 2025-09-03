@@ -41,23 +41,24 @@ export default function MegaMenu({ open, onClose }) {
           <NavLink to="/listings" onClick={onClose}>
             Listings
           </NavLink>
-          <NavLink to="/documents" onClick={onClose}>
-            Documents
-          </NavLink>
-          <NavLink to="/dashboard" onClick={onClose}>
-            Dashboard
-          </NavLink>
-          <NavLink to="/agents" onClick={onClose}>
-            For Agents
-          </NavLink>
-          <NavLink to="/about" onClick={onClose}>
-            About Us
+          <NavLink to="/blog" onClick={onClose}>
+            Blog
           </NavLink>
           <NavLink to="/support" onClick={onClose}>
             Support
           </NavLink>
-          <NavLink to="/contact" onClick={onClose}>
-            Contact
+          <NavLink to="/login" onClick={onClose}>
+            Login
+          </NavLink>
+
+          <NavLink to="legal/privacy" onClick={onClose}>
+            Privacy Policy
+          </NavLink>
+          <NavLink to="legal/terms" onClick={onClose}>
+            Terms Of Use
+          </NavLink>
+          <NavLink to="legal/disclaimer" onClick={onClose}>
+            Disclaimer
           </NavLink>
         </nav>
 

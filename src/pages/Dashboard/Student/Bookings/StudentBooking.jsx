@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { FiExternalLink, FiAlertCircle } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 import "./StudentBookings.css";
 
 export default function StudentBookings(){
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState(() => {
     try { return JSON.parse(localStorage.getItem("student:bookings")) || []; } catch { return []; }
   });
@@ -45,7 +47,9 @@ export default function StudentBookings(){
                 <div><span>Check-out</span><b>{b.dates?.checkOut || "—"}</b></div>
               </div>
               <div className="sdb-actions">
-                <button className="sdb-link"><FiExternalLink /> View details</button>
+                <button className="sdb-link" onClick={() => navigate(`/dashboard/student/bookings/${b.id}`)}>
+                  <FiExternalLink /> View details
+               </button>
                 <span className="sdb-dot" />
                 <button className="sdb-link alt"><FiAlertCircle /> Support</button>
               </div>

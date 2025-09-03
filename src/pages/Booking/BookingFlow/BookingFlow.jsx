@@ -24,22 +24,29 @@ export default function BookingFlow() {
   // Smooth scroll to top on step change (nice UX)
   useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
 
-  const submitBooking = async () => {
-    const payload = { listingId, dates, profile, documents: selectedDocs, notes };
-    console.log("BOOKING SUBMIT", payload);
-
-    // Persist a simple booking stub so it shows in dashboard mock
+  const submitBooking = () => {
+    // Build & persist booking
     const existing = JSON.parse(localStorage.getItem("student:bookings") || "[]");
+
+    const nowIso = new Date().toISOString();
     const newBooking = {
       id: `b_${Date.now()}`,
       listingId,
       dates,
       note: notes,
       docIds: selectedDocs.map(d => d.id),
+      docsUpdatedAt: selectedDocs.length ? nowIso : undefined,
+
+      // Defaults to support the details/fee flow
+      status: "Pending Payment",
+      applicationFeeCents: 2500, // $25.00 mock fee
+      createdAt: nowIso
     };
+
     localStorage.setItem("student:bookings", JSON.stringify([newBooking, ...existing]));
 
-    navigate("/dashboard/student?tab=bookings", { replace: true });
+    // Go straight to the booking details funnel
+    navigate(`/dashboard/student/bookings/${newBooking.id}`, { replace: true });
   };
 
   const StepPill = ({ n, label, icon: Icon }) => (

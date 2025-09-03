@@ -302,8 +302,8 @@ export default function Register() {
                 onChange={(e) => update("terms", e.target.checked)}
               />
               <span>
-                I agree to the <a href="/terms" className="rg-link">Terms</a> and{" "}
-                <a href="/privacy" className="rg-link">Privacy</a>.
+                I agree to the <a href="legal/terms" className="rg-link">Terms</a> and{" "}
+                <a href="legal/privacy" className="rg-link">Privacy</a>.
               </span>
             </label>
 
