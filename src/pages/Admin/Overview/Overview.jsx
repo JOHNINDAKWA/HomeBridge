@@ -8,7 +8,7 @@ import {
   FiTrendingUp,
   FiChevronRight,
 } from "react-icons/fi";
-import "./AdminOverView.css";
+import "./Overview.css";
 
 /* ---------- Data helpers (frontend mock) ---------- */
 function getBookings() {

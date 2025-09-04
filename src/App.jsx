@@ -53,8 +53,8 @@ import AdminStudentDetail from "./pages/Admin/AdminStudents/AdminStudentDetail.j
 import AdminStudents from "./pages/Admin/AdminStudents/AdminStudents.jsx";
 import AdminSettings from "./pages/Admin/AdminSettings/AdminSettings.jsx";
 import AdminProfile from "./pages/Admin/Profile/AdminProfile.jsx";
+import AdminOverview from "./pages/Admin/Overview/Overview.jsx";
 // fixed this
-import AdminOverview from "./pages/Admin/Overview/AdminOverView.jsx";
 
 export default function App() {
   return (
