@@ -1,0 +1,94 @@
+/* Unique prefix: agd- (AGent Detail) */
+
+.agd-wrap { display:grid; gap: var(--space-4); }
+
+/* Header */
+.agd-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: var(--space-5);
+}
+.agd-left { display:flex; align-items:center; gap: 14px; }
+.agd-title { display:flex; align-items:center; gap: 12px; }
+.agd-avatar {
+  width:56px; height:56px; border-radius:14px; object-fit:cover; border:1px solid var(--border);
+}
+.agd-title__meta { display:grid; gap:4px; }
+.agd-company { display:flex; align-items:center; gap:8px; }
+.agd-company h2 { margin:0; }
+.agd-edit { background:transparent; border:1px solid var(--border); border-radius:8px; padding:6px; cursor:pointer; }
+.agd-editRow { display:flex; align-items:center; gap:8px; }
+.agd-minor { color: var(--ink-soft); display:flex; align-items:center; gap:8px; }
+.agd-dot { color:#99a; }
+
+.agd-right { display:flex; align-items:center; gap:10px; }
+.agd-verify { border-color:#bbf7d0; color:#166534; }
+.agd-suspend { border-color:#fecaca; color:#991b1b; }
+.agd-reinstate { border-color:#bae6fd; color:#0c4a6e; }
+
+/* Chips */
+.agd-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 10px; border-radius:999px; font-size:12px;
+  background:#f1fbfb; color: var(--brand-700); border:1px solid #b8ece8;
+}
+.agd-status.verified   { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+.agd-status.pending    { background:#fffaf0; color:#b45309; border-color:#fdecc8; }
+.agd-status.suspended  { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
+.agd-kyc.passed  { background:#ecfeff; color:#0ea5e9; border-color:#bae6fd; }
+.agd-kyc.pending { background:#eef2ff; color:#4f46e5; border-color:#c7d2fe; }
+.agd-kyc.failed  { background:#fde2e2; color:#be123c; border-color:#fecaca; }
+
+/* Grid */
+.agd-grid {
+  display:grid; grid-template-columns: 1.2fr 1fr;
+  gap: var(--space-4);
+}
+@media (max-width: 1080px){
+  .agd-grid { grid-template-columns: 1fr; }
+}
+
+/* Cards */
+.agd-card { padding: var(--space-5); display:grid; gap: 14px; }
+.agd-kv {
+  display:grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 10px 16px;
+}
+.agd-kv span { color: var(--ink-soft); display:block; font-size:12px; }
+.agd-link { color: var(--brand-700); display:inline-flex; align-items:center; gap:6px; }
+
+/* Metrics */
+.agd-metrics { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+@media (max-width: 720px){ .agd-metrics { grid-template-columns: 1fr; } }
+.agd-metric { border:1px solid var(--border); border-radius: var(--radius); padding:12px; }
+.agd-metric span { color: var(--ink-soft); font-size:12px; }
+.agd-metric b { font-size: 1.4rem; display:block; margin-top:4px; }
+.agd-bar { height:8px; background:#f3eef3; border:1px solid var(--border); border-radius:999px; overflow:hidden; margin-top:8px; }
+.agd-bar > span { display:block; height:100%; background: linear-gradient(90deg, var(--brand), #7bd3ca); }
+
+/* Stars */
+.agd-stars { display:inline-flex; align-items:center; gap:6px; }
+.agd-star { color:#cbd5e1; }
+.agd-star.is-on { color:#f59e0b; }
+.agd-stars b { margin-left:4px; }
+
+/* Docs */
+.agd-docs { display:grid; gap:10px; }
+.agd-doc {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px; border:1px solid var(--border); border-radius: var(--radius);
+}
+.agd-doc__meta { display:grid; }
+.agd-sub { color: var(--ink-soft); font-size:12px; }
+.agd-doc__ctrls { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.agd-docchip.pending { background:#fffaf0; color:#b45309; border-color:#fdecc8; }
+.agd-docchip.verified { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+.agd-docchip.rejected { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
+.agd-kycActions { display:flex; align-items:center; gap:10px; margin-top:6px; }
+.agd-approve { box-shadow:none; }
+.agd-fail { box-shadow:none; }
+
+/* Notes */
+.agd-noteRow { display:flex; align-items:center; gap:10px; justify-content:flex-end; }

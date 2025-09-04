@@ -1,4 +1,6 @@
+
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiDollarSign,
   FiDownload,
@@ -73,6 +75,8 @@ const fmt = (n, currency = "USD") =>
   new Intl.NumberFormat(undefined, { style: "currency", currency }).format(n);
 
 export default function Payouts() {
+  const nav = useNavigate();
+
   /** Connection state (pretend we use Stripe/Flutterwave etc.) */
   const [connected] = useState(true); // flip to false to see the connect banner
 
@@ -81,9 +85,6 @@ export default function Payouts() {
   const [status, setStatus] = useState("All");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-
-  /** Drawer (detail) */
-  const [open, setOpen] = useState(null); // payout object or null
 
   /** Derived rows */
   const rows = useMemo(() => {
@@ -158,6 +159,9 @@ export default function Payouts() {
     URL.revokeObjectURL(url);
   }
 
+  // navigate to full detail page
+  const goDetail = (id) => nav(`/dashboard/agent/payouts/${id}`);
+
   return (
     <div className="po">
       {/* Head */}
@@ -204,7 +208,6 @@ export default function Payouts() {
       {/* Summary cards */}
       <section className="po-cards">
         <article className="po-card card">
-          
           <div className="po-card__meta">
             <span>Available balance</span>
             <b>{fmt(summary.available)}</b>
@@ -212,7 +215,6 @@ export default function Payouts() {
         </article>
 
         <article className="po-card card">
-          
           <div className="po-card__meta">
             <span>Upcoming payout</span>
             <b>{fmt(summary.upcoming)}</b>
@@ -220,7 +222,6 @@ export default function Payouts() {
         </article>
 
         <article className="po-card card">
-          
           <div className="po-card__meta">
             <span>Paid last 30 days</span>
             <b>{fmt(summary.last30)}</b>
@@ -228,7 +229,6 @@ export default function Payouts() {
         </article>
 
         <article className="po-card card">
-         
           <div className="po-card__meta">
             <span>On hold</span>
             <b>{fmt(summary.holds)}</b>
@@ -316,7 +316,7 @@ export default function Payouts() {
             <div className="hide-sm po-clip">{r.method}</div>
             <div className="hide-sm">{r.txCount}</div>
             <div className="po-actions">
-              <button className="btn btn--light" onClick={() => setOpen(r)}>
+              <button className="btn btn--light" onClick={() => goDetail(r.id)}>
                 View
               </button>
             </div>
@@ -330,71 +330,6 @@ export default function Payouts() {
           </div>
         )}
       </section>
-
-      {/* Drawer */}
-      <div className={`po-dim ${open ? "show" : ""}`} onClick={() => setOpen(null)} />
-      <aside className={`po-drawer ${open ? "open" : ""}`} aria-hidden={!open}>
-        {open && (
-          <div className="po-drawer__in">
-            <header className="po-drawer__head">
-              <div>
-                <h3 className="mono">{open.id}</h3>
-                <div className="muted">{open.period}</div>
-              </div>
-              <span className={`chip chip--${open.status.replace(/\s+/g, "-").toLowerCase()}`}>
-                {open.status}
-              </span>
-            </header>
-
-            <section className="po-dsec">
-              <h4>Summary</h4>
-              <div className="po-grid">
-                <div className="po-kv">
-                  <span>Gross</span>
-                  <b>{fmt(open.amount)}</b>
-                </div>
-                <div className="po-kv">
-                  <span>Fees</span>
-                  <b className="muted">-{fmt(open.fees)}</b>
-                </div>
-                <div className="po-kv">
-                  <span>Net</span>
-                  <b>{fmt(open.net)}</b>
-                </div>
-                <div className="po-kv">
-                  <span>Transfers</span>
-                  <b>{open.txCount}</b>
-                </div>
-                <div className="po-kv">
-                  <span>Date</span>
-                  <b>{open.date}</b>
-                </div>
-                <div className="po-kv">
-                  <span>Method</span>
-                  <b>{open.method}</b>
-                </div>
-              </div>
-            </section>
-
-            <section className="po-dsec">
-              <h4>Notes</h4>
-              <p className="muted">
-                This is a demo view. Hook this up to your provider’s payout object to show
-                line items and bank trace IDs.
-              </p>
-            </section>
-
-            <div className="po-d-actions">
-              <button className="btn btn--light" onClick={() => alert("Open statement")}>
-                Statement PDF
-              </button>
-              <button className="btn btn--ghost" onClick={() => setOpen(null)}>
-                Close
-              </button>
-            </div>
-          </div>
-        )}
-      </aside>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -51,7 +52,6 @@ export default function Applications() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [selected, setSelected] = useState(new Set());
-  const [drawer, setDrawer] = useState(null);
 
   const listings = useMemo(
     () => ["All", ...Array.from(new Set(DEMO.map(d => d.listing)))],
@@ -244,7 +244,7 @@ export default function Applications() {
               >
                 <button
                   className="btn btn--light"
-                  onClick={()=>setDrawer(r)}
+                  onClick={()=>goDetail(r.id)}
                 >
                   <FiEye /> View
                 </button>
@@ -271,57 +271,6 @@ export default function Applications() {
           Next <FiChevronRight />
         </button>
       </div>
-
-      {/* Drawer details (unchanged) */}
-      <div className={`ap-dim ${drawer ? "show" : ""}`} onClick={()=>setDrawer(null)} aria-hidden />
-      <aside className={`ap-drawer ${drawer ? "open" : ""}`} aria-hidden={!drawer}>
-        {drawer && (
-          <div className="ap-drawer__in">
-            <header className="ap-drawer__head">
-              <div>
-                <h3>{drawer.student}</h3>
-                <div className="muted mini">{drawer.email}</div>
-              </div>
-              <span className={`chip chip--${slug(drawer.stage)}`}>{drawer.stage}</span>
-            </header>
-
-            <section className="ap-dsec">
-              <h4>Application</h4>
-              <div className="ap-kv"><span>ID</span><b className="mono">{drawer.id}</b></div>
-              <div className="ap-kv"><span>Listing</span><b>{drawer.listing}</b></div>
-              <div className="ap-kv"><span>Move-in</span><b>{drawer.moveIn}</b></div>
-              <div className="ap-kv"><span>Last update</span><b>{drawer.updated}</b></div>
-            </section>
-
-            <section className="ap-dsec">
-              <h4>Documents</h4>
-              {drawer.docs.length ? (
-                <ul className="ap-docs">
-                  {drawer.docs.map((d,i)=>(<li key={i}><FiFileText /> {d}</li>))}
-                </ul>
-              ) : <p className="muted mini">No docs yet.</p>}
-            </section>
-
-            <section className="ap-dsec">
-              <h4>Actions</h4>
-              <div className="ap-d-actions">
-                <button className="btn btn--light" onClick={()=>alert("Message (demo)")}>
-                  <FiMail /> Message applicant
-                </button>
-                <button className="btn btn--light" onClick={()=>alert("Move to Reviewing (demo)")}>
-                  <FiClock /> Move to Reviewing
-                </button>
-                <button className="btn btn--light" onClick={()=>alert("Send Offer (demo)")}>
-                  <FiSend /> Send Offer
-                </button>
-                <button className="btn btn--light" onClick={()=>alert("Reject (demo)")}>
-                  <FiXCircle /> Reject
-                </button>
-              </div>
-            </section>
-          </div>
-        )}
-      </aside>
     </div>
   );
 }

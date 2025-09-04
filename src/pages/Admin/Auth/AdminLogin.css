@@ -1,0 +1,17 @@
+/* src/pages/Admin/Auth/AdminLogin.css */
+.adlogin-wrap { min-height:100dvh; display:grid; place-items:center; background: radial-gradient(60% 50% at 10% 0%, rgba(20,184,166,.08), transparent), linear-gradient(180deg, #f6f9fb, #f0f7f6); padding:20px; }
+.card { background:#fff; border:1px solid #e7ecf0; border-radius:16px; box-shadow:0 10px 30px rgba(16,24,40,.06); }
+.adlogin { width:min(520px, 96vw); padding:22px; display:grid; gap:16px; }
+.adlogin-head { display:grid; gap:8px; text-align:center; }
+.adlogin-badge { display:inline-flex; align-items:center; gap:6px; background:#f1fbfb; color:#0f766e; border:1px solid #b8ece8; padding:6px 10px; border-radius:999px; justify-self:center; font-weight:700; }
+.adlogin-sub { color:#667085; margin:0; }
+.adlogin-form { display:grid; gap:12px; }
+.ad-field { display:grid; gap:6px; }
+.ad-field > span { font-size:13px; color:#475467; }
+.ad-input { display:flex; align-items:center; gap:8px; border:1px solid #e6e8ec; border-radius:12px; padding:0 10px; background:#fff; }
+.ad-input input { border:0; outline:0; padding:12px 0; width:100%; background:transparent; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:10px 12px; border-radius:12px; background:linear-gradient(180deg,#00b2b2,#019191); color:#fff; border:1px solid transparent; cursor:pointer; font-weight:700; justify-content:center; }
+.btn[disabled]{ opacity:.6; cursor:not-allowed; }
+.btn--light { background:#fff; color:#0f766e; border-color:#b8ece8; }
+.adlogin-submit { margin-top:4px; }
+.adlogin-dev { margin-top:2px; }

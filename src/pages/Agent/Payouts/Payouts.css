@@ -1,5 +1,6 @@
+
 /* ===========================
-   Payouts.css
+   Payouts.css (drawer removed)
    =========================== */
 
 /* Page wrapper */
@@ -245,9 +246,49 @@
 
 /* ---------- Table ---------- */
 .po-table {
-  overflow: hidden;
-  padding: 0; /* rows handle their own padding */
+  overflow: auto;
+  padding: 0; 
 }
+
+/* Brand-tinted scrollbar for Payouts table */
+.po-table {
+  /* tweakables */
+  --sb-size: 10px;
+  --sb-radius: 999px;
+  --sb-thumb: color-mix(in srgb, var(--brand-700, #0e7490) 45%, #cbd5e1);
+  --sb-thumb-hover: color-mix(in srgb, var(--brand-700, #0e7490) 70%, #94a3b8);
+  --sb-track: transparent;
+
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
+}
+
+/* WebKit/Chromium */
+.po-table::-webkit-scrollbar {
+  height: var(--sb-size);  /* horizontal */
+  width: var(--sb-size);   /* vertical */
+}
+.po-table::-webkit-scrollbar-track {
+  background: var(--sb-track);
+  border-radius: var(--sb-radius);
+}
+.po-table::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: var(--sb-radius);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.po-table:hover::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-hover);
+}
+.po-table::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .po-tr {
   display: grid;
   grid-template-columns:
@@ -345,87 +386,6 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
   letter-spacing: 0.02em;
-}
-
-/* ---------- Drawer ---------- */
-.po-dim {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-  z-index: 50;
-}
-.po-dim.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.po-drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  height: 100dvh;
-  width: min(560px, 92vw);
-  background: #fff;
-  border-left: 1px solid var(--border);
-  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.12);
-  transform: translateX(105%);
-  transition: transform 0.28s ease;
-  z-index: 60;
-}
-.po-drawer.open {
-  transform: translateX(0);
-}
-.po-drawer__in {
-  display: grid;
-  gap: var(--space-5);
-  padding: var(--space-6);
-  height: 100%;
-  overflow: auto;
-}
-
-.po-drawer__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px dashed var(--border);
-}
-.po-dsec {
-  display: grid;
-  gap: var(--space-4);
-}
-.po-dsec h4 {
-  margin: 0;
-}
-.po-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-.po-kv {
-  padding: 12px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: #fff;
-}
-.po-kv span {
-  display: block;
-  font-size: var(--fs-sm);
-  color: var(--ink-soft);
-  margin-bottom: 6px;
-}
-
-.po-d-actions {
-  margin-top: auto;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  padding-top: var(--space-4);
-  border-top: 1px dashed var(--border);
 }
 
 /* ---------- Helpers ---------- */

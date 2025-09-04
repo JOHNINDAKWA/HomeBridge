@@ -1,5 +1,6 @@
+
 /* ================================
-  Applications — Agent Console
+  Applications — Agent Console (drawer removed)
   ================================ */
 
 .ap { display: grid; gap: var(--space-6); }
@@ -82,9 +83,48 @@
 
 /* ---------- Table (perfectly aligned header + rows) ---------- */
 .ap-table {
-  padding: 0; overflow: hidden;
+  padding: 0; overflow-x: auto;
   display: grid;
   grid-template-columns: 44px 140px minmax(140px, 1.3fr) minmax(140px, 1.2fr) 140px 120px 140px 140px 120px;
+}
+/* Brand-tinted scrollbar for Applications table */
+.ap-table {
+  /* tweakables */
+  --sb-size: 10px;
+  --sb-radius: 999px;
+  --sb-thumb: color-mix(in srgb, var(--brand-700, #0e7490) 45%, #cbd5e1);
+  --sb-thumb-hover: color-mix(in srgb, var(--brand-700, #0e7490) 70%, #94a3b8);
+  --sb-track: transparent;
+
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--sb-thumb) var(--sb-track);
+
+  /* Smooth scrolling & layout nicety */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable both-edges;
+}
+
+/* WebKit/Chromium */
+.ap-table::-webkit-scrollbar {
+  height: var(--sb-size);  /* horizontal bar */
+  width: var(--sb-size);   /* if vertical appears */
+}
+.ap-table::-webkit-scrollbar-track {
+  background: var(--sb-track);
+  border-radius: var(--sb-radius);
+}
+.ap-table::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb);
+  border-radius: var(--sb-radius);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.ap-table:hover::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-hover);
+}
+.ap-table::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .ap-table-head {
@@ -101,13 +141,8 @@
   align-items: center;
 }
 
-.ap-table-body {
-  display: contents;
-}
-
-.ap-table-row {
-  display: contents;
-}
+.ap-table-body { display: contents; }
+.ap-table-row { display: contents; }
 
 .ap-table-row > div {
   display: flex;
@@ -157,34 +192,6 @@
 
 /* ---------- Pager ---------- */
 .ap-pager { display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
-
-/* ---------- Drawer ---------- */
-.ap-dim {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.35);
-  opacity: 0; pointer-events: none;
-  transition: opacity .25s ease; z-index: 40;
-}
-.ap-dim.show { opacity: 1; pointer-events: auto; }
-
-.ap-drawer {
-  position: fixed; top: 0; right: 0; bottom: 0;
-  width: min(92vw, 520px);
-  background: #fff; border-left: 1px solid var(--border);
-  transform: translateX(102%); transition: transform .25s ease; z-index: 45;
-  display: grid;
-}
-.ap-drawer.open { transform: translateX(0); }
-
-.ap-drawer__in { padding: 20px; overflow: auto; display: grid; gap: 18px; }
-.ap-drawer__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.ap-dsec { display: grid; gap: 10px; }
-.ap-kv { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
-.ap-docs { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-.ap-d-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-
-/* ---------- Buttons (variant) ---------- */
-.btn--danger { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1100px) {

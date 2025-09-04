@@ -1,0 +1,123 @@
+/* Unique prefix: asd- (Admin Student Detail) */
+
+.asd-wrap { display:grid; gap: var(--space-4); }
+
+/* Header */
+.asd-head {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: var(--space-5);
+}
+.asd-left { display:flex; align-items:center; gap: 14px; }
+.asd-title { display:flex; align-items:center; gap: 12px; }
+.asd-ava { width:56px; height:56px; border-radius:14px; object-fit:cover; border:1px solid var(--border); }
+.asd-meta { display:grid; gap:6px; }
+.asd-minor { color: var(--ink-soft); display:flex; align-items:center; gap:8px; }
+.asd-contact { display:flex; align-items:center; gap:8px; flex-wrap: wrap; }
+.asd-link { color: var(--brand-700); display:inline-flex; align-items:center; gap:6px; }
+.asd-dot { color:#99a; }
+.asd-right { display:flex; align-items:center; gap:10px; }
+.asd-approve { box-shadow:none; border-color:#bbf7d0; color:#166534; }
+.asd-fail { box-shadow:none; border-color:#fecaca; color:#991b1b; }
+.asd-suspend { border-color:#fecaca; color:#991b1b; }
+.asd-reinstate { border-color:#bae6fd; color:#0c4a6e; }
+
+/* Chips */
+.asd-chip {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 10px; border-radius:999px; font-size:12px;
+  background:#f1fbfb; color: var(--brand-700); border:1px solid #b8ece8;
+}
+.asd-status.active     { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+.asd-status.suspended  { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
+.asd-kyc.passed  { background:#ecfeff; color:#0ea5e9; border-color:#bae6fd; }
+.asd-kyc.pending { background:#eef2ff; color:#4f46e5; border-color:#c7d2fe; }
+.asd-kyc.failed  { background:#fde2e2; color:#be123c; border-color:#fecaca; }
+
+/* Layout grid */
+.asd-grid {
+  display:grid; grid-template-columns: 1.2fr 1fr;
+  gap: var(--space-4);
+}
+@media (max-width: 1100px){ .asd-grid { grid-template-columns: 1fr; } }
+
+.asd-card { padding: var(--space-5); display:grid; gap: 14px; }
+
+/* KV list */
+.asd-kv {
+  display:grid; grid-template-columns: repeat(2, minmax(220px,1fr)); gap: 10px 16px;
+}
+.asd-kv span { display:block; color: var(--ink-soft); font-size:12px; }
+
+/* Docs */
+.asd-docsHead { display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap: wrap; }
+.asd-docsProgress { display:grid; gap:6px; min-width: 220px; }
+.asd-bar { height:10px; background:#f3eef3; border:1px solid var(--border); border-radius:999px; overflow:hidden; }
+.asd-bar > span { height:100%; display:block; background: linear-gradient(90deg, var(--brand), #7bd3ca); }
+.asd-docsHint { color: var(--ink-soft); font-size: 12px; display:flex; align-items:center; gap:6px; }
+
+.asd-docsList { display:grid; gap:10px; }
+.asd-docRow {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  border:1px solid var(--border); border-radius: var(--radius); padding:10px;
+  background:#fff;
+}
+.asd-docMeta { display:flex; align-items:center; gap:10px; }
+.asd-docIcon {
+  width:36px; height:36px; border-radius:10px; display:grid; place-items:center;
+  background:#f8fffe; border:1px solid var(--border);
+}
+.asd-sub { color: var(--ink-soft); font-size:12px; }
+.asd-docActions { display:flex; align-items:center; gap:8px; flex-wrap: wrap; }
+.asd-docchip.pending { background:#fffaf0; color:#b45309; border-color:#fdecc8; }
+.asd-docchip.verified { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+.asd-docchip.rejected { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
+.asd-kycRow { display:flex; gap:10px; }
+
+/* Bookings */
+.asd-empty { border:1px dashed var(--border); border-radius: var(--radius); padding:16px; color: var(--ink-soft); display:grid; gap:10px; place-items:start; }
+.asd-bookings { list-style:none; margin:0; padding:0; display:grid; gap:12px; }
+.asd-booking { border:1px solid var(--border); border-radius: var(--radius); padding:12px; display:grid; gap:10px; }
+.asd-bTop { display:flex; align-items:center; justify-content:space-between; }
+.asd-badge { padding:4px 10px; border-radius: 999px; border:1px solid var(--border); background:#fff; font-variant-numeric: tabular-nums; }
+.asd-bstatus.pending-payment    { background:#fffaf0; color:#b45309; border:1px solid #fdecc8; }
+.asd-bstatus.payment-complete   { background:#f0f9ff; color:#075985; border:1px solid #bae6fd; }
+.asd-bstatus.ready-to-submit    { background:#eef2ff; color:#3730a3; border:1px solid #c7d2fe; }
+.asd-bstatus.under-review       { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+.asd-bstatus.approved           { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+.asd-bstatus.rejected           { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+
+.asd-bGrid { display:grid; grid-template-columns: repeat(4, minmax(140px,1fr)); gap: 8px 16px; }
+.asd-bGrid span { display:block; color: var(--ink-soft); font-size:12px; }
+.asd-bActions { display:flex; justify-content:flex-end; }
+
+/* Notes */
+.asd-noteRow { display:flex; gap:10px; justify-content:flex-end; }
+
+
+/* Prefix: asd-  (Admin Student Detail) */
+
+/* --- Modal --- */
+.asd-modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; }
+.asd-modal__backdrop { position: absolute; inset: 0; background: rgba(16, 24, 40, .35); backdrop-filter: blur(2px); }
+.asd-modal__panel { position: relative; z-index: 1; width: min(1000px, 94vw); max-height: 88vh; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; }
+.asd-modal__head { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 8px; padding: 12px 12px; border-bottom: 1px solid var(--border); }
+.asd-modal__title { display: flex; align-items: center; gap: 10px; }
+.asd-modal__title b { display:block; }
+.asd-modal__title small { color: var(--ink-soft); }
+.asd-nav { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--border); background: #fff; border-radius: 10px; cursor: pointer; }
+.asd-modal__body { padding: 14px; overflow: auto; background: #fff; }
+.asd-preview-img { max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 10px; }
+.asd-preview-frame { width: 100%; height: 66vh; border: 0; border-radius: 10px; background: #fff; }
+.asd-preview-empty { padding: 36px; border: 1px dashed var(--border); border-radius: 12px; display: grid; place-items: center; text-align: center; color: var(--ink-soft); gap: 10px; }
+.asd-modal__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; border-top: 1px solid var(--border); }
+
+/* --- Payment methods (read-only list) --- */
+.asd-pmlist { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.asd-pmlist li { display: flex; align-items: center; gap: 12px; border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+.asd-pmlist .brand { font-weight: 600; }
+.asd-pmlist .num, .asd-pmlist .exp { color: var(--ink-soft); font-size: 12px; }
+
+/* keep your existing asd- styles; the modal + pmlist are additive */
+

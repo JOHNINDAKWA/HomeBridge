@@ -1,0 +1,125 @@
+/* Unique prefix adb- (Admin Bookings) */
+/* Layout shell */
+.adb-wrap { padding: var(--space-6); display: grid; gap: var(--space-5); }
+
+/* Toolbar */
+.adb-toolbar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+.adb-title { display:flex; align-items:baseline; gap:12px; }
+.adb-title h2 { margin:0; font-size: var(--fs-2xl); }
+.adb-count { color: var(--ink-soft); font-size: var(--fs-sm); }
+
+.adb-filters {
+  display:flex; align-items:center; flex-wrap:wrap;
+  gap: 10px;
+}
+
+/* Search */
+.adb-search {
+  display:flex; align-items:center; gap:8px;
+  border:1px solid var(--border); background:#fff; border-radius: 14px;
+  padding: 10px 12px; min-width: 320px;
+}
+.adb-search input { border:0; outline:0; background:transparent; font: inherit; width:100%; }
+
+/* Custom select shells */
+.adb-select {
+  display:flex; align-items:center; gap:8px;
+  border:1px solid var(--border); background:#fff; border-radius: 14px;
+  padding: 8px 10px;
+}
+.adb-select__label { color: var(--ink-soft); font-size: 12px; }
+.adb-select select {
+  border:0; outline:0; background:transparent; font:inherit; cursor:pointer;
+  appearance: none; padding-right: 20px;
+  background-image:
+    linear-gradient(45deg, transparent 50%, #7a7a7a 50%),
+    linear-gradient(135deg, #7a7a7a 50%, transparent 50%);
+  background-position: right 10px top 49%, right 5px top 49%;
+  background-size: 6px 6px, 6px 6px;
+  background-repeat: no-repeat;
+}
+.adb-reset { box-shadow: none; }
+
+/* Table wrapper */
+.adb-tableWrap {
+  border:1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* Table */
+.adb-table { width:100%; border-collapse: separate; border-spacing: 0; background:#fff; }
+
+/* Header cells aligned with body cells */
+.adb-table thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: linear-gradient(180deg, #ffffff 0%, #fdfbff 100%);
+  border-bottom:1px solid var(--border);
+  padding: 14px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #3a3d47;
+}
+
+/* Column sizing helpers (keeps header/rows aligned) */
+.adb-col-id      { width: 220px; }
+.adb-col-listing { width: 280px; }
+.adb-col-dates   { width: 280px; }
+.adb-col-docs    { width: 110px; }
+.adb-col-status  { width: 190px; }
+.adb-col-decision{ width: 320px; }
+.adb-col-actions { width: 320px; }
+
+.adb-table tbody td {
+  padding: 16px;
+  border-bottom:1px solid var(--border);
+  vertical-align: middle;
+}
+.adb-table tbody tr:hover td { background:#fffefd; }
+
+/* Cells */
+.adb-id .adb-link {
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 10px; border:1px solid var(--border);
+  border-radius: 999px; background:#f8fffe; color: var(--brand-700);
+  font-variant-numeric: tabular-nums;
+}
+.adb-cell-strong { font-weight: 600; }
+.adb-arrow { color:#98a1b3; margin: 0 4px; }
+.adb-docs { font-weight:600; }
+.adb-note { color: var(--ink-soft); }
+
+/* Chips (statuses) */
+.adb-chip {
+  display:inline-flex; align-items:center; padding:4px 10px;
+  border-radius: 999px; border:1px solid var(--border); font-size:12px;
+  white-space:nowrap;
+}
+.adb-chip.pending-payment   { background:#fffaf0; color:#b45309; border-color:#fdecc8; }
+.adb-chip.payment-complete  { background:#f0f9ff; color:#075985; border-color:#bae6fd; }
+.adb-chip.ready-to-submit   { background:#eef2ff; color:#4f46e5; border-color:#c7d2fe; }
+.adb-chip.under-review      { background:#fef3c7; color:#92400e; border-color:#fde68a; }
+.adb-chip.approved          { background:#f0fdf4; color:#166534; border-color:#bbf7d0; }
+.adb-chip.rejected          { background:#fef2f2; color:#991b1b; border-color:#fecaca; }
+
+/* Actions */
+.adb-actions { display:flex; gap:8px; flex-wrap: wrap; }
+.adb-approve { border-color:#bbf7d0; color:#166534; }
+.adb-reject  { border-color:#fecaca; color:#991b1b; }
+
+/* Empty */
+.adb-emptyRow td { padding: 18px; text-align:center; color: var(--ink-soft); }
+
+/* Responsive */
+@media (max-width: 1200px){
+  .adb-col-actions { width: 260px; }
+  .adb-col-decision{ width: 280px; }
+}
+@media (max-width: 980px){
+  .adb-filters { gap: 8px; }
+  .adb-search { min-width: 240px; }
+}
