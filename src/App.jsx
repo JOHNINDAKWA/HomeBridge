@@ -44,7 +44,6 @@ import Settings from "./pages/Agent/Settings/Settings.jsx";
 
 import "./index.css";
 import AdminLayout from "./pages/Admin/AdminLayout/AdminLayout.jsx";
-import AdminOverview from "./pages/Admin/Overview/AdminOverView.jsx";
 import AdminBookings from "./pages/Admin/Bookings/AdminBookings.jsx";
 import AdminLogin from "./pages/Admin/Auth/AdminLogin.jsx";
 import AdminBookingDetail from "./pages/Admin/Bookings/AdminBookingDetail.jsx";
@@ -54,6 +53,7 @@ import AdminStudentDetail from "./pages/Admin/AdminStudents/AdminStudentDetail.j
 import AdminStudents from "./pages/Admin/AdminStudents/AdminStudents.jsx";
 import AdminSettings from "./pages/Admin/AdminSettings/AdminSettings.jsx";
 import AdminProfile from "./pages/Admin/Profile/AdminProfile.jsx";
+import AdminOverview from "./pages/Admin/Overview/AdminOverView.jsx";
 
 export default function App() {
   return (
