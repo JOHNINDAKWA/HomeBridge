@@ -54,6 +54,7 @@ import AdminStudents from "./pages/Admin/AdminStudents/AdminStudents.jsx";
 import AdminSettings from "./pages/Admin/AdminSettings/AdminSettings.jsx";
 import AdminProfile from "./pages/Admin/Profile/AdminProfile.jsx";
 import AdminOverview from "./pages/Admin/Overview/Overview.jsx";
+import AdminFirstLogin from "./pages/Admin/Auth/AdminFirstLogin.jsx";
 // fixed this
 
 export default function App() {
@@ -123,6 +124,7 @@ export default function App() {
         </Route>
 
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/first-login" element={<AdminFirstLogin />} />
 
         {/* ADMIN routes — NO site header/footer */}
         <Route

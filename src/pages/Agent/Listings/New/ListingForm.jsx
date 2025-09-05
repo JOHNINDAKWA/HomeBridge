@@ -1,198 +1,297 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useMemo, useState } from "react";
-import { LISTINGS } from "../../../../data/listings.js"; // adjust if your path differs
+// src/pages/Dashboard/Agent/Listings/ListingForm.jsx
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   FiUpload, FiSave, FiX, FiStar, FiMapPin, FiTrash2, FiCheckCircle
 } from "react-icons/fi";
+import { useAuth } from "../../../../Context/AuthContext.jsx";
 
-/**
- * Utility helpers
- */
+const MAX_IMAGES_PER_LISTING = 12;
+const MAX_FILES_PER_UPLOAD = 5;
+
 function ensureArray(x) { return Array.isArray(x) ? x : (x ? [x] : []); }
 function uid() { return Math.random().toString(36).slice(2, 9); }
 
 export default function ListingForm({ mode = "create" }) {
-  const { id } = useParams();
+  const { api } = useAuth();
   const nav = useNavigate();
+  const { id } = useParams();
 
-  // base listing when editing
-  const base = useMemo(
-    () => (mode === "edit" ? LISTINGS.find((l) => l.id === id) : null),
-    [mode, id]
-  );
+  const [loading, setLoading] = useState(mode === "edit");
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
 
   const [form, setForm] = useState({
     // Basics
-    title: base?.title || "",
-    type: base?.type || "Room",
-    city: base?.city || "",
-    university: base?.university || "",
-    price: base?.price || 1000,
+    title: "",
+    type: "Room",
+    city: "",
+    university: "",
+    price: 1000,
 
-    // About / description
-    description:
-      base?.blurb ||
-      "Comfortable, student-first accommodation with secure workflows and escrowed payments.",
+    // About
+    description: "Comfortable, student-first accommodation with secure workflows and escrowed payments.",
 
     // Lists
-    highlights: ensureArray(base?.tags?.includes("Furnished") ? ["Furnished"] : []),
-    amenities: ensureArray(base?.tags) || [],
+    highlights: [],
+    amenities: [],
     policies: ["No smoking", "Student-only lease"],
     notes: "",
 
-    // Location (simple version; wire to maps later)
+    // Location
     address: "",
     latitude: "",
     longitude: "",
     transitMins: "6–8",
 
-    // Photos
-    photos: base?.img ? [{ id: uid(), src: base.img }] : [],
-    coverPhotoId: null, // set after upload/selection
-
-    // Available units (if property has multiple units / rooms)
-    units: [
-      // { id, label, type, price, availableFrom, leaseMonths, size }
-    ],
-
     // Flags
-    furnished: base?.tags?.includes("Furnished") || false,
-    verified: true,
+    furnished: false,
+
+    // Images / units
+    coverImageId: null,
+    images: [],
+    units: [],
   });
 
-  // Derived: if no cover set but we have photos, choose first
-  const coverId = form.coverPhotoId ?? (form.photos[0]?.id || null);
+  // Derived cover id: explicit cover → first image fallback
+  const coverId = form.coverImageId ?? (form.images?.[0]?.id || null);
 
-  function update(k, v) {
-    setForm((f) => ({ ...f, [k]: v }));
-  }
-
-  function addToList(field, value) {
-    if (!value) return;
-    setForm((f) => ({ ...f, [field]: [...(f[field] || []), value] }));
-  }
-
-  function removeFromList(field, idx) {
-    setForm((f) => ({ ...f, [field]: f[field].filter((_, i) => i !== idx) }));
-  }
-
-  function addUnit() {
-    setForm((f) => ({
-      ...f,
-      units: [
-        ...(f.units || []),
-        {
-          id: uid(),
-          label: "",
-          type: f.type || "Room",
-          price: f.price || 1000,
-          availableFrom: "",
-          leaseMonths: 12,
-          size: "",
-        },
-      ],
-    }));
-  }
-
-  function updateUnit(id, k, v) {
-    setForm((f) => ({
-      ...f,
-      units: f.units.map((u) => (u.id === id ? { ...u, [k]: v } : u)),
-    }));
-  }
-
-  function removeUnit(id) {
-    setForm((f) => ({ ...f, units: f.units.filter((u) => u.id !== id) }));
-  }
-
-  // Mock upload: you’ll replace with your uploader later
-  function mockUpload() {
-    const url = window.prompt("Paste an image URL to mock-upload:");
-    if (!url) return;
-    const photo = { id: uid(), src: url };
-    setForm((f) => ({
-      ...f,
-      photos: [...f.photos, photo],
-      coverPhotoId: f.coverPhotoId ?? photo.id,
-    }));
-  }
-
-  function setCover(id) {
-    setForm((f) => ({ ...f, coverPhotoId: id }));
-  }
-
-  function save(e) {
-    e.preventDefault();
-
-    // Build payload you’d POST to API
-    const payload = {
-      ...form,
-      coverPhotoId: coverId,
-      // normalize lists
-      highlights: form.highlights.filter(Boolean),
-      amenities: form.amenities.filter(Boolean),
-      policies: form.policies.filter(Boolean),
-      units: (form.units || []).map((u) => ({ ...u })),
-    };
-
-    // TODO: call your API here
-    console.log("Saving listing:", payload);
-
-    // Navigate back to agent listings index
-    nav("/dashboard/agent/listings");
-  }
-
-  // Local inputs for quick add rows
+  // Local quick-add inputs
   const [hlInput, setHlInput] = useState("");
   const [amInput, setAmInput] = useState("");
   const [polInput, setPolInput] = useState("");
 
+  // -------- Fetch (edit mode) --------
+  useEffect(() => {
+    if (mode !== "edit") return;
+    let active = true;
+    (async () => {
+      try {
+        setErr("");
+        const { item } = await api(`/api/agent/listings/${id}`);
+        if (!active) return;
+        setForm({
+          title: item.title || "",
+          type: item.type || "Room",
+          city: item.city || "",
+          university: item.university || "",
+          price: item.price ?? 1000,
+          description: item.description || "",
+          highlights: ensureArray(item.highlights) || [],
+          amenities: ensureArray(item.amenities) || [],
+          policies: ensureArray(item.policies) || [],
+          notes: item.notes || "",
+
+          address: item.address || "",
+          latitude: item.latitude || "",
+          longitude: item.longitude || "",
+          transitMins: item.transitMins || "",
+
+          furnished: !!item.furnished,
+
+          coverImageId: item.coverImageId || null,
+          images: item.images || [],
+          units: (item.units || []).map(u => ({ ...u })), // keep server ids for edit
+        });
+      } catch (e) {
+        setErr(e.message || "Failed to load listing");
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, mode]);
+
+  // -------- Helpers --------
+  const update = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const addToList = (field, value) => value && setForm(f => ({ ...f, [field]: [...(f[field] || []), value] }));
+  const removeFromList = (field, idx) => setForm(f => ({ ...f, [field]: f[field].filter((_, i) => i !== idx) }));
+
+  const addUnit = () =>
+    setForm(f => ({
+      ...f,
+      units: [
+        ...(f.units || []),
+        { id: uid(), label: "", type: f.type || "Room", price: f.price || 1000, availableFrom: "", leaseMonths: 12, size: "" }
+      ]
+    }));
+  const updateUnit = (uidx, k, v) =>
+    setForm(f => ({ ...f, units: f.units.map(u => (u.id === uidx ? { ...u, [k]: v } : u)) }));
+  const removeUnit = (uidx) =>
+    setForm(f => ({ ...f, units: f.units.filter(u => u.id !== uidx) }));
+
+  const buildPayload = () => ({
+    title: form.title,
+    type: form.type,
+    city: form.city,
+    university: form.university || null,
+    price: Number.isFinite(form.price) ? form.price : 0,
+    description: form.description,
+    highlights: (form.highlights || []).filter(Boolean),
+    amenities: (form.amenities || []).filter(Boolean),
+    policies: (form.policies || []).filter(Boolean),
+    notes: form.notes || null,
+
+    address: form.address || null,
+    latitude: form.latitude || null,
+    longitude: form.longitude || null,
+    transitMins: form.transitMins || null,
+
+    furnished: !!form.furnished,
+    coverImageId: coverId || null,
+
+    units: (form.units || []).map(u => ({
+      label: u.label || null,
+      type: u.type || null,
+      price: Number.isFinite(u.price) ? u.price : null,
+      availableFrom: u.availableFrom || null,
+      leaseMonths: Number.isFinite(u.leaseMonths) ? u.leaseMonths : null,
+      size: u.size || null,
+    })),
+  });
+
+  // -------- Save (create or update) --------
+  const save = async (e) => {
+    e.preventDefault();
+    setErr("");
+    setSaving(true);
+    try {
+      const payload = buildPayload();
+
+      if (mode === "create") {
+        const { item } = await api("/api/agent/listings", { method: "POST", body: payload });
+        // go to edit so photos can be added right away
+        nav(`/dashboard/agent/listings/${item.id}/edit`, { replace: true });
+      } else {
+        const { item } = await api(`/api/agent/listings/${id}`, { method: "PUT", body: payload });
+        // merge back for immediate UI freshness
+        setForm(f => ({
+          ...f,
+          ...item,
+          images: item.images || f.images,
+          units: item.units || f.units,
+        }));
+      }
+    } catch (e) {
+      setErr(e.message || "Failed to save listing");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // -------- Images --------
+  const remaining = Math.max(0, MAX_IMAGES_PER_LISTING - (form.images?.length || 0));
+
+  const handleUpload = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    // enforce per-upload and remaining caps
+    if (files.length > MAX_FILES_PER_UPLOAD) {
+      alert(`You can upload at most ${MAX_FILES_PER_UPLOAD} files at a time.`);
+      e.target.value = "";
+      return;
+    }
+    if (files.length > remaining) {
+      alert(`You can add ${remaining} more image(s).`);
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      // If we're on create, auto-create first
+      let listingId = id;
+      if (!listingId) {
+        const { item } = await api("/api/agent/listings", { method: "POST", body: buildPayload() });
+        listingId = item.id;
+      }
+
+      const fd = new FormData();
+      files.forEach(f => fd.append("images", f));
+
+      const { images } = await api(`/api/agent/listings/${listingId}/images`, {
+        method: "POST",
+        body: fd, // <-- FormData (api helper must not set JSON header)
+      });
+
+      setForm(f => ({
+        ...f,
+        images: [...(f.images || []), ...images],
+        coverImageId: f.coverImageId || images[0]?.id || null,
+      }));
+
+      if (!id) {
+        // Move to edit route after successful upload
+        nav(`/dashboard/agent/listings/${listingId}/edit`, { replace: true });
+      }
+    } catch (err) {
+      alert(err.message || "Upload failed");
+    } finally {
+      e.target.value = ""; // allow re-picking the same files
+    }
+  };
+
+  const setCover = async (imageId) => {
+    // only meaningful once listing exists
+    if (!id) return;
+    try {
+      await api(`/api/agent/listings/${id}/cover/${imageId}`, { method: "PATCH" });
+      setForm(f => ({ ...f, coverImageId: imageId }));
+    } catch (e) {
+      alert(e.message || "Failed to set cover image");
+    }
+  };
+
+  const removeImage = async (imageId) => {
+    if (!id) return;
+    try {
+      await api(`/api/agent/listings/${id}/images/${imageId}`, { method: "DELETE" });
+      setForm(f => {
+        const next = (f.images || []).filter(i => i.id !== imageId);
+        const nextCover = f.coverImageId === imageId ? (next[0]?.id || null) : f.coverImageId;
+        return { ...f, images: next, coverImageId: nextCover };
+      });
+    } catch (e) {
+      alert(e.message || "Failed to delete image");
+    }
+  };
+
+  if (loading) return <div className="card" style={{ padding: 16 }}>Loading…</div>;
+
   return (
     <form className="card" style={{ padding: 16, display: "grid", gap: 16 }} onSubmit={save}>
       <h3>{mode === "create" ? "Create Listing" : "Edit Listing"}</h3>
+      {err && (
+        <div className="card" style={{ padding: 12, borderColor: "#e11d48", color: "#b91c1c" }}>
+          ⚠ {err}
+        </div>
+      )}
 
       {/* BASICS */}
       <section className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <label>
-          Title
-          <input className="input" value={form.title} onChange={(e) => update("title", e.target.value)} />
+        <label>Title
+          <input className="input" value={form.title} onChange={(e) => update("title", e.target.value)} required />
         </label>
-
-        <label>
-          Type
+        <label>Type
           <select className="select" value={form.type} onChange={(e) => update("type", e.target.value)}>
             <option>Room</option>
             <option>Studio</option>
             <option>1 Bedroom</option>
           </select>
         </label>
-
-        <label>
-          City
-          <input className="input" value={form.city} onChange={(e) => update("city", e.target.value)} />
+        <label>City
+          <input className="input" value={form.city} onChange={(e) => update("city", e.target.value)} required />
         </label>
-
-        <label>
-          University
+        <label>University
           <input className="input" value={form.university} onChange={(e) => update("university", e.target.value)} />
         </label>
-
-        <label>
-          Price (per month)
-          <input
-            className="input"
-            type="number"
-            value={form.price}
-            onChange={(e) => update("price", e.target.valueAsNumber)}
-          />
+        <label>Price (per month)
+          <input className="input" type="number" value={form.price}
+                 onChange={(e) => update("price", e.target.valueAsNumber)} required />
         </label>
-
         <label className="rg-check" style={{ alignSelf: "end" }}>
-          <input
-            type="checkbox"
-            checked={form.furnished}
-            onChange={(e) => update("furnished", e.target.checked)}
-          />
+          <input type="checkbox" checked={form.furnished} onChange={(e) => update("furnished", e.target.checked)} />
           <span>Furnished</span>
         </label>
       </section>
@@ -200,33 +299,19 @@ export default function ListingForm({ mode = "create" }) {
       {/* ABOUT / DESCRIPTION */}
       <section className="card" style={{ padding: 12, display: "grid", gap: 10 }}>
         <h4 style={{ margin: 0 }}>About / Description</h4>
-        <textarea
-          className="textarea"
-          rows={5}
-          value={form.description}
-          onChange={(e) => update("description", e.target.value)}
-          placeholder="Describe the accommodation, distance to campus, who it suits, etc."
-        />
+        <textarea className="textarea" rows={5} value={form.description}
+                  onChange={(e) => update("description", e.target.value)}
+                  placeholder="Describe the accommodation, distance to campus, who it suits, etc." />
       </section>
 
       {/* HIGHLIGHTS */}
       <section className="card" style={{ padding: 12, display: "grid", gap: 10 }}>
         <h4 style={{ margin: 0 }}>Highlights (short selling points)</h4>
         <div className="grid" style={{ gridTemplateColumns: "1fr auto", gap: 8 }}>
-          <input
-            className="input"
-            value={hlInput}
-            onChange={(e) => setHlInput(e.target.value)}
-            placeholder="e.g., Verified agent + escrow"
-          />
-          <button
-            type="button"
-            className="btn btn--light"
-            onClick={() => {
-              addToList("highlights", hlInput.trim());
-              setHlInput("");
-            }}
-          >
+          <input className="input" value={hlInput}
+                 onChange={(e) => setHlInput(e.target.value)} placeholder="e.g., Verified agent + escrow" />
+          <button type="button" className="btn btn--light"
+                  onClick={() => { addToList("highlights", hlInput.trim()); setHlInput(""); }}>
             Add
           </button>
         </div>
@@ -234,13 +319,8 @@ export default function ListingForm({ mode = "create" }) {
           {form.highlights.map((h, i) => (
             <span key={i} className="badge" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <FiStar /> {h}
-              <button
-                type="button"
-                className="btn btn--ghost"
-                title="Remove"
-                onClick={() => removeFromList("highlights", i)}
-                style={{ padding: "2px 6px" }}
-              >
+              <button type="button" className="btn btn--ghost" title="Remove"
+                      onClick={() => removeFromList("highlights", i)} style={{ padding: "2px 6px" }}>
                 <FiX />
               </button>
             </span>
@@ -252,20 +332,10 @@ export default function ListingForm({ mode = "create" }) {
       <section className="card" style={{ padding: 12, display: "grid", gap: 10 }}>
         <h4 style={{ margin: 0 }}>Amenities</h4>
         <div className="grid" style={{ gridTemplateColumns: "1fr auto", gap: 8 }}>
-          <input
-            className="input"
-            value={amInput}
-            onChange={(e) => setAmInput(e.target.value)}
-            placeholder="e.g., In-unit laundry"
-          />
-          <button
-            type="button"
-            className="btn btn--light"
-            onClick={() => {
-              addToList("amenities", amInput.trim());
-              setAmInput("");
-            }}
-          >
+          <input className="input" value={amInput}
+                 onChange={(e) => setAmInput(e.target.value)} placeholder="e.g., In-unit laundry" />
+          <button type="button" className="btn btn--light"
+                  onClick={() => { addToList("amenities", amInput.trim()); setAmInput(""); }}>
             Add
           </button>
         </div>
@@ -273,13 +343,8 @@ export default function ListingForm({ mode = "create" }) {
           {form.amenities.map((a, i) => (
             <span key={i} className="badge" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <FiCheckCircle /> {a}
-              <button
-                type="button"
-                className="btn btn--ghost"
-                title="Remove"
-                onClick={() => removeFromList("amenities", i)}
-                style={{ padding: "2px 6px" }}
-              >
+              <button type="button" className="btn btn--ghost" title="Remove"
+                      onClick={() => removeFromList("amenities", i)} style={{ padding: "2px 6px" }}>
                 <FiX />
               </button>
             </span>
@@ -291,20 +356,10 @@ export default function ListingForm({ mode = "create" }) {
       <section className="card" style={{ padding: 12, display: "grid", gap: 10 }}>
         <h4 style={{ margin: 0 }}>Policies & Notes</h4>
         <div className="grid" style={{ gridTemplateColumns: "1fr auto", gap: 8 }}>
-          <input
-            className="input"
-            value={polInput}
-            onChange={(e) => setPolInput(e.target.value)}
-            placeholder="e.g., No pets"
-          />
-          <button
-            type="button"
-            className="btn btn--light"
-            onClick={() => {
-              addToList("policies", polInput.trim());
-              setPolInput("");
-            }}
-          >
+          <input className="input" value={polInput}
+                 onChange={(e) => setPolInput(e.target.value)} placeholder="e.g., No pets" />
+          <button type="button" className="btn btn--light"
+                  onClick={() => { addToList("policies", polInput.trim()); setPolInput(""); }}>
             Add
           </button>
         </div>
@@ -312,27 +367,16 @@ export default function ListingForm({ mode = "create" }) {
           {form.policies.map((p, i) => (
             <span key={i} className="badge" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               {p}
-              <button
-                type="button"
-                className="btn btn--ghost"
-                title="Remove"
-                onClick={() => removeFromList("policies", i)}
-                style={{ padding: "2px 6px" }}
-              >
+              <button type="button" className="btn btn--ghost" title="Remove"
+                      onClick={() => removeFromList("policies", i)} style={{ padding: "2px 6px" }}>
                 <FiX />
               </button>
             </span>
           ))}
         </div>
-        <label>
-          Notes (optional)
-          <textarea
-            className="textarea"
-            rows={3}
-            value={form.notes}
-            onChange={(e) => update("notes", e.target.value)}
-            placeholder="Any extra information you want the student to know."
-          />
+        <label>Notes (optional)
+          <textarea className="textarea" rows={3} value={form.notes}
+                    onChange={(e) => update("notes", e.target.value)} placeholder="Any extra information…" />
         </label>
       </section>
 
@@ -340,41 +384,21 @@ export default function ListingForm({ mode = "create" }) {
       <section className="card" style={{ padding: 12, display: "grid", gap: 10 }}>
         <h4 style={{ margin: 0 }}>Location</h4>
         <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-          <label>
-            Address
-            <input
-              className="input"
-              value={form.address}
-              onChange={(e) => update("address", e.target.value)}
-              placeholder="Street, City, Zip"
-            />
+          <label>Address
+            <input className="input" value={form.address}
+                   onChange={(e) => update("address", e.target.value)} placeholder="Street, City, Zip" />
           </label>
-          <label>
-            Transit (mins)
-            <input
-              className="input"
-              value={form.transitMins}
-              onChange={(e) => update("transitMins", e.target.value)}
-              placeholder="e.g., 6–8"
-            />
+          <label>Transit (mins)
+            <input className="input" value={form.transitMins}
+                   onChange={(e) => update("transitMins", e.target.value)} placeholder="e.g., 6–8" />
           </label>
-          <label>
-            Latitude
-            <input
-              className="input"
-              value={form.latitude}
-              onChange={(e) => update("latitude", e.target.value)}
-              placeholder="(optional)"
-            />
+          <label>Latitude
+            <input className="input" value={form.latitude}
+                   onChange={(e) => update("latitude", e.target.value)} placeholder="(optional)" />
           </label>
-          <label>
-            Longitude
-            <input
-              className="input"
-              value={form.longitude}
-              onChange={(e) => update("longitude", e.target.value)}
-              placeholder="(optional)"
-            />
+          <label>Longitude
+            <input className="input" value={form.longitude}
+                   onChange={(e) => update("longitude", e.target.value)} placeholder="(optional)" />
           </label>
         </div>
         <div className="mini" style={{ color: "var(--ink-soft)", display: "flex", alignItems: "center", gap: 6 }}>
@@ -382,25 +406,26 @@ export default function ListingForm({ mode = "create" }) {
         </div>
       </section>
 
-      {/* PHOTOS + COVER */}
+      {/* PHOTOS (create + edit) */}
       <section className="card" style={{ padding: 12, display: "grid", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <h4 style={{ margin: 0 }}>Photos</h4>
-          <button type="button" className="btn btn--light" onClick={mockUpload}>
-            <FiUpload /> Upload
-          </button>
+          <label className="btn btn--light" style={{ cursor: "pointer" }}>
+            <FiUpload /> Upload ({form.images?.length || 0}/{MAX_IMAGES_PER_LISTING})
+            <input type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleUpload} />
+          </label>
         </div>
 
-        {form.photos.length === 0 ? (
+        {(form.images?.length || 0) === 0 ? (
           <p className="mini" style={{ color: "var(--ink-soft)" }}>
-            No photos yet. Upload at least one image.
+            No photos yet. Upload up to {MAX_IMAGES_PER_LISTING} images. (Max {MAX_FILES_PER_UPLOAD} per upload)
           </p>
         ) : (
           <div className="grid" style={{ gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
-            {form.photos.map((p) => (
+            {form.images.map((p) => (
               <div key={p.id} className="card" style={{ padding: 8, display: "grid", gap: 8 }}>
                 <img
-                  src={p.src}
+                  src={p.url}
                   alt=""
                   style={{ width: "100%", aspectRatio: "16/10", objectFit: "cover", borderRadius: 8 }}
                   onClick={() => setCover(p.id)}
@@ -410,25 +435,13 @@ export default function ListingForm({ mode = "create" }) {
                     <input
                       type="radio"
                       name="cover"
-                      checked={(coverId === p.id)}
+                      checked={(form.coverImageId ?? form.images?.[0]?.id) === p.id}
                       onChange={() => setCover(p.id)}
                     />
                     <span>Main image</span>
                   </label>
-                  <button
-                    type="button"
-                    className="btn btn--ghost"
-                    title="Remove photo"
-                    onClick={() =>
-                      setForm((f) => {
-                        const next = f.photos.filter((x) => x.id !== p.id);
-                        const nextCover =
-                          f.coverPhotoId === p.id ? (next[0]?.id ?? null) : f.coverPhotoId;
-                        return { ...f, photos: next, coverPhotoId: nextCover };
-                      })
-                    }
-                    style={{ padding: "2px 8px" }}
-                  >
+                  <button type="button" className="btn btn--ghost" title="Remove photo"
+                          onClick={() => removeImage(p.id)} style={{ padding: "2px 8px" }}>
                     <FiTrash2 />
                   </button>
                 </div>
@@ -438,98 +451,9 @@ export default function ListingForm({ mode = "create" }) {
         )}
       </section>
 
-      {/* AVAILABLE UNITS */}
-      <section className="card" style={{ padding: 12, display: "grid", gap: 10 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h4 style={{ margin: 0 }}>Available Units (optional)</h4>
-          <button type="button" className="btn btn--light" onClick={addUnit}>+ Add unit</button>
-        </div>
-
-        {(form.units || []).length === 0 ? (
-          <p className="mini" style={{ color: "var(--ink-soft)" }}>No units added.</p>
-        ) : (
-          <div className="grid" style={{ gap: 10 }}>
-            {form.units.map((u) => (
-              <div key={u.id} className="card" style={{ padding: 10, display: "grid", gap: 8 }}>
-                <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                  <label>
-                    Label
-                    <input
-                      className="input"
-                      value={u.label}
-                      onChange={(e) => updateUnit(u.id, "label", e.target.value)}
-                      placeholder="e.g., Room 2A, 3rd floor"
-                    />
-                  </label>
-                  <label>
-                    Type
-                    <select
-                      className="select"
-                      value={u.type}
-                      onChange={(e) => updateUnit(u.id, "type", e.target.value)}
-                    >
-                      <option>Room</option>
-                      <option>Studio</option>
-                      <option>1 Bedroom</option>
-                    </select>
-                  </label>
-                  <label>
-                    Price (per month)
-                    <input
-                      className="input"
-                      type="number"
-                      value={u.price}
-                      onChange={(e) => updateUnit(u.id, "price", e.target.valueAsNumber)}
-                    />
-                  </label>
-                </div>
-
-                <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-                  <label>
-                    Available from
-                    <input
-                      className="input"
-                      type="date"
-                      value={u.availableFrom || ""}
-                      onChange={(e) => updateUnit(u.id, "availableFrom", e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Lease (months)
-                    <input
-                      className="input"
-                      type="number"
-                      value={u.leaseMonths}
-                      onChange={(e) => updateUnit(u.id, "leaseMonths", e.target.valueAsNumber)}
-                    />
-                  </label>
-                  <label>
-                    Size
-                    <input
-                      className="input"
-                      value={u.size}
-                      onChange={(e) => updateUnit(u.id, "size", e.target.value)}
-                      placeholder="e.g., 22 m²"
-                    />
-                  </label>
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <button
-                    type="button"
-                    className="btn btn--ghost"
-                    onClick={() => removeUnit(u.id)}
-                  >
-                    <FiTrash2 /> Remove unit
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <button className="btn" type="submit"><FiSave /> Save listing</button>
+      <button className="btn" type="submit" disabled={saving}>
+        <FiSave /> {saving ? "Saving…" : "Save listing"}
+      </button>
     </form>
   );
 }

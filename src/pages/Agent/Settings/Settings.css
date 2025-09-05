@@ -78,4 +78,26 @@
   .set-sticky { display: flex; }
 }
 
+
+/* Minimal, smooth spinner */
+.hb-spinner {
+  display: inline-block;
+  border: 2px solid rgba(15, 118, 110, 0.15);
+  border-top-color: rgba(15, 118, 110, 0.95);
+  border-radius: 50%;
+  animation: hbspin .65s linear infinite;
+}
+@keyframes hbspin {
+  to { transform: rotate(360deg); }
+}
+
+/* Optional: make section headers align Save button nicely */
+.set-box__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+
 /* inputs inherit global styles (.input, .select, .btn, .card) from your system */

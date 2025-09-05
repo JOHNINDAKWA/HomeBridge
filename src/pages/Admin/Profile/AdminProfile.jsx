@@ -1,214 +1,289 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   FiUser, FiMail, FiShield, FiKey, FiCopy, FiCheck, FiX, FiPlus, FiTrash2,
-  FiLock, FiRefreshCw, FiEyeOff, FiSearch
+  FiLock, FiRefreshCw, FiEyeOff, FiSearch, FiLoader
 } from "react-icons/fi";
+import { useAuth } from "../../../Context/AuthContext.jsx";
 import "./AdminProfile.css";
+import Modal from "./Modal.jsx"; 
 
-/* ---------- Storage keys & helpers ---------- */
-const KEY_USERS = "admin:users";
-const KEY_SESSIONS = "admin:sessions";
+/* ---------- UI role <-> server scope mapping ---------- */
+const UI_ROLES = ["superadmin", "admin", "analyst", "readonly"];
+const toServerScope = (ui) => String(ui || "").toUpperCase();          // "superadmin" -> "SUPERADMIN"
+const toUiRole = (server) => String(server || "").toLowerCase();       // "SUPERADMIN" -> "superadmin"
 
-/** roles in ascending power (index 0 = strongest) */
-const ROLES = ["superadmin", "admin", "analyst", "readonly"];
-
-function loadUsers() {
-  try { return JSON.parse(localStorage.getItem(KEY_USERS)) || []; } catch { return []; }
-}
-function saveUsers(list) {
-  localStorage.setItem(KEY_USERS, JSON.stringify(list));
-}
-function loadSessions() {
-  try { return JSON.parse(localStorage.getItem(KEY_SESSIONS)) || []; } catch { return []; }
-}
-function saveSessions(list) {
-  localStorage.setItem(KEY_SESSIONS, JSON.stringify(list));
-}
-
-/* ---------- Seed: ensure at least one superadmin (current user) ---------- */
-function seedUsersIfEmpty() {
-  const users = loadUsers();
-  if (users.length > 0) return users;
-
-  // derive current login from your Auth mock (best-effort)
-  let email = "superadmin@homebridge.test";
-  try {
-    const authUser = JSON.parse(localStorage.getItem("auth:user") || "null");
-    if (authUser?.email) email = authUser.email;
-  } catch {}
-  const role = (localStorage.getItem("auth:role") || "superadmin").toLowerCase();
-
-  const seeded = [{
-    id: "adm_" + Date.now(),
-    name: "Super Admin",
-    email,
-    role: role === "admin" ? "superadmin" : role, // make sure it's superadmin at bootstrap
-    status: "active", // active | suspended | invited
-    twoFA: false,
-    createdAt: new Date().toISOString(),
-    lastLoginAt: new Date().toISOString(),
-    avatar: "https://i.pravatar.cc/80?img=65",
-    apiKey: "",
-  }];
-  saveUsers(seeded);
-  return seeded;
-}
-
-/* ---------- Utils ---------- */
+/* ---------- helpers ---------- */
 const fmtDate = (iso) => (iso ? new Date(iso).toLocaleString() : "—");
 const classRole = (r = "") => "adprof-role " + r.toLowerCase();
-const classStatus = (s = "") => "adprof-status " + s.toLowerCase();
-const randKey = () =>
-  "hb_" + Math.random().toString(36).slice(2, 8) + "-" + Math.random().toString(36).slice(2, 10);
+const classStatus = (s = "") => "adprof-status " + String(s || "").toLowerCase();
 
 export default function AdminProfile() {
-  const [users, setUsers] = useState(seedUsersIfEmpty);
-  const [sessions, setSessions] = useState(loadSessions);
-  const [tab, setTab] = useState("me"); // me | team
-  const [query, setQuery] = useState("");
+  const { api } = useAuth();
 
-  // identify current admin (by auth:user email; fallback to first superadmin)
-  const current = useMemo(() => {
-    const auth = (() => {
-      try { return JSON.parse(localStorage.getItem("auth:user") || "null"); } catch { return null; }
-    })();
-    let byEmail = users.find(u => u.email === auth?.email);
-    if (byEmail) return byEmail;
-    const superA = users.find(u => u.role === "superadmin");
-    return superA || users[0];
-  }, [users]);
+  const [tab, setTab] = useState("me"); // "me" | "team"
+  const [loadingMe, setLoadingMe] = useState(true);
+  const [loadingTeam, setLoadingTeam] = useState(true);
+  const [err, setErr] = useState("");
 
-  /* ----------- My profile state ----------- */
-  const [name, setName] = useState(current?.name || "");
-  const [twoFA, setTwoFA] = useState(!!current?.twoFA);
-  const [apiKey, setApiKey] = useState(current?.apiKey || "");
+  // me
+  const [me, setMe] = useState(null);
+  const [name, setName] = useState("");
+  const [twoFA, setTwoFA] = useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [savingMe, setSavingMe] = useState(false);
   const [pwd, setPwd] = useState({ current: "", next: "", confirm: "" });
+  const [savingPwd, setSavingPwd] = useState(false);
+  const [rotatingKey, setRotatingKey] = useState(false);
+  const [revoking, setRevoking] = useState(false);
 
+  // team
+  const [team, setTeam] = useState([]);
+  const [query, setQuery] = useState("");
+  const [invite, setInvite] = useState({ email: "", name: "", role: "admin", password: "" });
+  const [inviting, setInviting] = useState(false);
+  const [rowBusy, setRowBusy] = useState({}); // id -> boolean
+
+   const [modal, setModal] = useState({ visible: false, title: '', message: '', copiablePassword: null });
+
+  // initial load
   useEffect(() => {
-    if (!current) return;
-    setName(current.name || "");
-    setTwoFA(!!current.twoFA);
-    setApiKey(current.apiKey || "");
-  }, [current?.id]); // refresh when switching accounts (unlikely here)
+    let live = true;
+    (async () => {
+      try {
+        setErr("");
+        const [{ user: userMe }, { team: teamList }] = await Promise.all([
+          api("/api/admin/me"),
+          api("/api/admin/team"),
+        ]);
+        if (!live) return;
 
-  /* ----------- Team invite form ----------- */
-  const [invite, setInvite] = useState({ email: "", role: "admin" });
+        setMe(userMe);
+        setName(userMe?.name || "");
+        setTwoFA(!!userMe?.twoFA);
+        setApiKey(userMe?.apiKey || "");
+        setTeam(teamList);
+      } catch (e) {
+        setErr(e.message || "Failed to load admin data");
+      } finally {
+        if (live) { setLoadingMe(false); setLoadingTeam(false); }
+      }
+    })();
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  /* ----------- Derived for table ----------- */
+  const currentRoleUi = useMemo(() => toUiRole(me?.adminScope || (me?.role ?? "")), [me]);
+
+  /* ---------- ME actions ---------- */
+  const saveMe = async () => {
+    setSavingMe(true); setErr("");
+    try {
+      const { user } = await api("/api/admin/me", { method: "PUT", body: { name, twoFA } });
+      setMe((m) => ({ ...m, name: user.name, twoFA: user.twoFA }));
+    } catch (e) {
+      setErr(e.message || "Failed to save profile");
+    } finally {
+      setSavingMe(false);
+    }
+  };
+
+const changePassword = async () => {
+  if (!pwd.next || pwd.next !== pwd.confirm) {
+    setModal({
+      visible: true,
+      title: "Password Mismatch",
+      message: "New passwords do not match."
+    });
+    return;
+  }
+  setSavingPwd(true); setErr("");
+  try {
+    await api("/api/admin/me/password", { method: "POST", body: { current: pwd.current, next: pwd.next } });
+    setPwd({ current: "", next: "", confirm: "" });
+    setModal({
+      visible: true,
+      title: "Success",
+      message: "Password has been successfully updated."
+    });
+  } catch (e) {
+    setErr(e.message || "Failed to update password");
+  } finally {
+    setSavingPwd(false);
+  }
+};
+
+  const rotateKey = async () => {
+    setRotatingKey(true); setErr("");
+    try {
+      const { apiKey: k } = await api("/api/admin/me/api-key", { method: "POST" });
+      setApiKey(k || "");
+    } catch (e) {
+      setErr(e.message || "Failed to generate API key");
+    } finally {
+      setRotatingKey(false);
+    }
+  };
+
+const copyKey = async () => {
+  if (!apiKey) return;
+  try {
+    await navigator.clipboard.writeText(apiKey);
+    setModal({
+      visible: true,
+      title: "Copied!",
+      message: "API key has been copied to your clipboard. Keep it safe! 🔐"
+    });
+  } catch {
+    setModal({
+      visible: true,
+      title: "Copy Failed",
+      message: "Could not copy the API key. Please try again or copy manually."
+    });
+  }
+};
+
+const revokeSessions = async () => {
+  setRevoking(true); setErr("");
+  try {
+    await api("/api/admin/me/revoke-sessions", { method: "POST" });
+    setModal({
+      visible: true,
+      title: "Sessions Revoked",
+      message: "All your active sessions have been successfully revoked. You will be logged out on other devices."
+    });
+  } catch (e) {
+    setErr(e.message || "Failed to revoke sessions");
+  } finally {
+    setRevoking(false);
+  }
+};
+
+  /* ---------- TEAM actions ---------- */
   const filtered = useMemo(() => {
     const k = query.trim().toLowerCase();
-    return users.filter(u =>
+    return team.filter(u =>
       !k ||
       u.email.toLowerCase().includes(k) ||
       (u.name || "").toLowerCase().includes(k)
     );
-  }, [users, query]);
+  }, [team, query]);
 
-  /* ----------- Mutations ----------- */
-  const persistUsers = (next) => { setUsers(next); saveUsers(next); };
+  const setBusy = (id, val) => setRowBusy((m) => ({ ...m, [id]: val }));
 
-  const updateMe = () => {
-    const next = users.map(u =>
-      u.id === current.id ? { ...u, name, twoFA, apiKey } : u
-    );
-    persistUsers(next);
-  };
-
-  const generateKey = () => {
-    const key = randKey();
-    setApiKey(key);
-    const next = users.map(u => u.id === current.id ? { ...u, apiKey: key } : u);
-    persistUsers(next);
-  };
-
-  const copyKey = async () => {
-    if (!apiKey) return;
-    try { await navigator.clipboard.writeText(apiKey); alert("API key copied!"); }
-    catch { alert("Copy failed."); }
-  };
-
-  const changePassword = () => {
-    if (!pwd.next || pwd.next !== pwd.confirm) {
-      alert("Passwords do not match (mock).");
-      return;
-    }
-    // mock only
-    setPwd({ current: "", next: "", confirm: "" });
-    alert("Password changed (mock).");
-  };
-
-  const revokeSessions = () => {
-    const next = sessions.filter(s => s.userId !== current.id);
-    setSessions(next); saveSessions(next);
-    alert("All your sessions have been revoked (mock).");
-  };
-
-  // Team actions
-  const inviteUser = () => {
-    if (!invite.email) return;
-    if (users.some(u => u.email.toLowerCase() === invite.email.toLowerCase())) {
-      alert("User already exists.");
-      return;
-    }
-    const nu = {
-      id: "adm_" + Date.now(),
-      name: invite.email.split("@")[0],
+const doInvite = async () => {
+  if (!invite.email) return;
+  setInviting(true); setErr("");
+  try {
+    const body = {
       email: invite.email,
-      role: invite.role,
-      status: "invited",
-      twoFA: false,
-      createdAt: new Date().toISOString(),
-      lastLoginAt: "",
-      avatar: "https://i.pravatar.cc/80?u=" + invite.email,
-      apiKey: "",
+      name: invite.name || undefined,
+      adminScope: toServerScope(invite.role),
+      password: invite.password || undefined,
     };
-    persistUsers([nu, ...users]);
-    setInvite({ email: "", role: "admin" });
-  };
+    const res = await api("/api/admin/team/invite", { method: "POST", body });
+    const { invited, tempPassword } = res || {};
+    setTeam((t) => [invited, ...t]);
+    setInvite({ email: "", name: "", role: "admin", password: "" });
 
-  const changeRole = (id, role) => {
-    // guard: never allow last superadmin to be demoted
-    const isLastSuper =
-      users.filter(u => u.role === "superadmin" && u.id !== id).length === 0 &&
-      users.find(u => u.id === id)?.role === "superadmin";
-    if (isLastSuper && role !== "superadmin") {
-      alert("You cannot demote the last superadmin.");
-      return;
+    // Show modal with copiable password
+    setModal({
+      visible: true,
+      title: "Invite Sent!",
+      message: `An invitation has been sent to ${invited.email}.`,
+      copiablePassword: tempPassword,
+    });
+  } catch (e) {
+    setErr(e.message || "Failed to invite user");
+  } finally {
+    setInviting(false);
+  }
+};
+
+  const changeRole = async (id, uiRole) => {
+    setBusy(id, true); setErr("");
+    try {
+      const { user } = await api(`/api/admin/team/${id}`, {
+        method: "PATCH",
+        body: { adminScope: toServerScope(uiRole) },
+      });
+      setTeam((t) => t.map(u => u.id === id ? { ...u, adminScope: user.adminScope, role: user.role } : u));
+    } catch (e) {
+      alert(e.message || "Failed to change role");
+    } finally {
+      setBusy(id, false);
     }
-    persistUsers(users.map(u => u.id === id ? { ...u, role } : u));
   };
 
-  const toggleSuspend = (id) => {
-    // guard: cannot suspend yourself
-    if (id === current.id) { alert("You cannot suspend your own account."); return; }
-    const u = users.find(x => x.id === id);
-    // guard: cannot suspend the last superadmin
-    const isLastSuper = u?.role === "superadmin" &&
-      users.filter(x => x.role === "superadmin" && x.id !== id).length === 0;
-    if (isLastSuper) { alert("You cannot suspend the last superadmin."); return; }
-
-    const next = users.map(u => u.id === id ? {
-      ...u, status: u.status === "suspended" ? "active" : "suspended"
-    } : u);
-    persistUsers(next);
+  const toggleSuspend = async (id) => {
+    const target = team.find(u => u.id === id);
+    const nextStatus = target?.status === "SUSPENDED" ? "ACTIVE" : "SUSPENDED";
+    setBusy(id, true); setErr("");
+    try {
+      const { user } = await api(`/api/admin/team/${id}`, { method: "PATCH", body: { status: nextStatus } });
+      setTeam((t) => t.map(u => u.id === id ? { ...u, status: user.status } : u));
+    } catch (e) {
+      alert(e.message || "Failed to change status");
+    } finally {
+      setBusy(id, false);
+    }
   };
 
-  const removeUser = (id) => {
-    if (id === current.id) { alert("You cannot remove yourself."); return; }
-    const u = users.find(x => x.id === id);
-    const isLastSuper = u?.role === "superadmin" &&
-      users.filter(x => x.role === "superadmin" && x.id !== id).length === 0;
-    if (isLastSuper) { alert("You cannot remove the last superadmin."); return; }
+  const acceptInvite = async (id) => {
+    setBusy(id, true); setErr("");
+    try {
+      const { user } = await api(`/api/admin/team/${id}`, { method: "PATCH", body: { status: "ACTIVE" } });
+      setTeam((t) => t.map(u => u.id === id ? { ...u, status: user.status } : u));
+    } catch (e) {
+      alert(e.message || "Failed to accept invite");
+    } finally {
+      setBusy(id, false);
+    }
+  };
 
+const resetPassword = async (id) => {
+  setBusy(id, true); setErr("");
+  try {
+    const { tempPassword } = await api(`/api/admin/team/${id}/reset-password`, { method: "POST" });
+    setModal({
+      visible: true,
+      title: "Password Reset",
+      message: tempPassword ? "A new temporary password has been generated." : "Password has been reset. The user must change it on their next login.",
+      copiablePassword: tempPassword,
+    });
+  } catch (e) {
+    setModal({
+      visible: true,
+      title: "Reset Failed",
+      message: e.message || "Failed to reset password."
+    });
+  } finally {
+    setBusy(id, false);
+  }
+};
+
+  const removeUser = async (id) => {
     if (!confirm("Remove this admin?")) return;
-    persistUsers(users.filter(u => u.id !== id));
+    setBusy(id, true); setErr("");
+    try {
+      await api(`/api/admin/team/${id}`, { method: "DELETE" });
+      setTeam((t) => t.filter(u => u.id !== id));
+    } catch (e) {
+      alert(e.message || "Failed to remove user");
+    } finally {
+      setBusy(id, false);
+    }
   };
 
-  const acceptInvite = (id) => {
-    persistUsers(users.map(u => u.id === id ? { ...u, status: "active", lastLoginAt: new Date().toISOString() } : u));
-  };
+  if (loadingMe && loadingTeam) {
+    return (
+      <div className="card" style={{ padding: 16, display:"flex", alignItems:"center", gap:8 }}>
+        <FiLoader className="spin" /> Loading…
+      </div>
+    );
+  }
 
   return (
+    <>
     <section className="adprof-wrap">
       <header className="adprof-head card">
         <div className="adprof-headL">
@@ -225,13 +300,17 @@ export default function AdminProfile() {
         </div>
       </header>
 
-      {tab === "me" && current && (
+      {err && <div className="card" style={{ padding: 12, borderColor: "#e11d48", color: "#b91c1c" }}>⚠ {err}</div>}
+
+      {tab === "me" && me && (
         <div className="adprof-grid">
           {/* Identity */}
-          <section className="card adprof-card">
+       <section className="asx-card asx-identity">
             <h3>Identity</h3>
             <div className="adprof-id">
-              <div className="adprof-ava"><img src={current.avatar} alt="" /></div>
+              <div className="adprof-ava">
+                <img src={`https://i.pravatar.cc/80?u=${me.email}`} alt="" />
+              </div>
               <div className="adprof-w">
                 <div className="adprof-row">
                   <label className="adprof-field">
@@ -240,19 +319,21 @@ export default function AdminProfile() {
                   </label>
                   <label className="adprof-field">
                     <span><FiMail/> Email</span>
-                    <input value={current.email} readOnly className="is-readonly" />
+                    <input value={me.email} readOnly className="is-readonly" />
                   </label>
                 </div>
                 <div className="adprof-row">
-                  <div className={classRole(current.role)}>{current.role}</div>
-                  <div className={classStatus(current.status)}>{current.status}</div>
+                  <div className={classRole(currentRoleUi)}>{currentRoleUi}</div>
+                  <div className={classStatus(me.status)}>{me.status?.toLowerCase()}</div>
                 </div>
                 <div className="adprof-row adprof-meta">
-                  <span>Created: <b>{fmtDate(current.createdAt)}</b></span>
-                  <span>Last login: <b>{fmtDate(current.lastLoginAt)}</b></span>
+                  <span>Created: <b>{fmtDate(me.createdAt)}</b></span>
+                  <span>Last login: <b>{fmtDate(me.lastLoginAt)}</b></span>
                 </div>
                 <div className="adprof-actions">
-                  <button className="btn" onClick={updateMe}><FiCheck/> Save profile</button>
+                  <button className="btn" onClick={saveMe} disabled={savingMe}>
+                    {savingMe ? <><FiLoader className="spin"/> Saving…</> : <><FiCheck/> Save profile</>}
+                  </button>
                 </div>
               </div>
             </div>
@@ -269,7 +350,7 @@ export default function AdminProfile() {
               </label>
               <div>
                 <b>Two-factor authentication</b>
-                <div className="adprof-muted">Add an extra step on admin login. (mock)</div>
+                <div className="adprof-muted">Add an extra step on admin login.</div>
               </div>
             </div>
 
@@ -282,7 +363,9 @@ export default function AdminProfile() {
                 <input type="password" placeholder="New password" value={pwd.next} onChange={e=>setPwd({...pwd, next:e.target.value})}/>
                 <input type="password" placeholder="Confirm new password" value={pwd.confirm} onChange={e=>setPwd({...pwd, confirm:e.target.value})}/>
               </div>
-              <button className="btn btn--light" onClick={changePassword}><FiRefreshCw/> Update password</button>
+              <button className="btn btn--light" onClick={changePassword} disabled={savingPwd}>
+                {savingPwd ? <><FiLoader className="spin"/> Updating…</> : <><FiRefreshCw/> Update password</>}
+              </button>
             </div>
 
             <div className="adprof-sep" />
@@ -291,10 +374,12 @@ export default function AdminProfile() {
               <h4><FiKey/> API key</h4>
               <div className="adprof-row">
                 <input className="is-readonly" placeholder="No key generated" value={apiKey} readOnly />
-                <button className="btn btn--light" onClick={generateKey}><FiKey/> Generate</button>
+                <button className="btn btn--light" onClick={rotateKey} disabled={rotatingKey}>
+                  {rotatingKey ? <><FiLoader className="spin"/> Generating…</> : <><FiKey/> Generate</>}
+                </button>
                 <button className="btn btn--light" onClick={copyKey} disabled={!apiKey}><FiCopy/> Copy</button>
               </div>
-              <div className="adprof-muted">Mock only. Replace with your backend later.</div>
+              <div className="adprof-muted">Keys are stored on your user and can be rotated anytime.</div>
             </div>
 
             <div className="adprof-sep" />
@@ -302,9 +387,11 @@ export default function AdminProfile() {
             <div className="adprof-row adprof-sessions">
               <div>
                 <b>Active sessions</b>
-                <div className="adprof-muted">{sessions.filter(s => s.userId === current.id).length} devices (mock)</div>
+                <div className="adprof-muted">Revoke all JWT sessions (forces re-login).</div>
               </div>
-              <button className="btn btn--light" onClick={revokeSessions}><FiEyeOff/> Revoke all</button>
+              <button className="btn btn--light" onClick={revokeSessions} disabled={revoking}>
+                {revoking ? <><FiLoader className="spin"/> Revoking…</> : <><FiEyeOff/> Revoke all</>}
+              </button>
             </div>
           </section>
 
@@ -312,7 +399,7 @@ export default function AdminProfile() {
           <section className="card adprof-card adprof-danger">
             <h3>Danger zone</h3>
             <div className="adprof-muted">
-              You cannot delete your own account from here. Contact another superadmin for account removal.
+              You cannot delete your own account from here. Ask another superadmin if needed.
             </div>
             <div className="adprof-row">
               <button className="btn btn--light" disabled><FiTrash2/> Delete my account</button>
@@ -324,20 +411,20 @@ export default function AdminProfile() {
       {tab === "team" && (
         <div className="adprof-team">
           {/* Invite */}
-          <section className="card adprof-card">
+          <section className="asx-card asx-invite">
             <h3>Invite admin</h3>
-            <div className="adprof-row">
-              <input
-                placeholder="email@company.com"
-                value={invite.email}
-                onChange={e => setInvite({ ...invite, email: e.target.value })}
-              />
+            <div className="adprof-row" style={{ flexWrap: "wrap" }}>
+              <input placeholder="Full name (optional)" value={invite.name} onChange={e => setInvite({ ...invite, name: e.target.value })} />
+              <input placeholder="email@company.com" value={invite.email} onChange={e => setInvite({ ...invite, email: e.target.value })} />
               <select value={invite.role} onChange={e => setInvite({ ...invite, role: e.target.value })}>
-                {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                {UI_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
-              <button className="btn" onClick={inviteUser}><FiPlus/> Send invite</button>
+              <input placeholder="Temp password (leave blank to auto-generate)" value={invite.password} onChange={e => setInvite({ ...invite, password: e.target.value })} />
+              <button className="btn" onClick={doInvite} disabled={inviting}>
+                {inviting ? <><FiLoader className="spin"/> Sending…</> : <><FiPlus/> Send invite</>}
+              </button>
             </div>
-            <div className="adprof-muted">Invited users appear below with status “invited”.</div>
+            <div className="adprof-muted">If you leave password empty, a temporary one will be generated and shown once.</div>
           </section>
 
           {/* List & filters */}
@@ -350,62 +437,102 @@ export default function AdminProfile() {
               </div>
             </div>
 
-            <div className="adprof-tableWrap">
-              <table className="adprof-table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Created</th>
-                    <th>Last login</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filtered.map(u => (
-                    <tr key={u.id}>
-                      <td className="adprof-u">
-                        <img src={u.avatar} alt="" />
-                        <div className="adprof-uMeta">
-                          <b>{u.name || "—"}</b>
-                          <span className="adprof-email">{u.email}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <select
-                          className="adprof-roleSel"
-                          value={u.role}
-                          onChange={e => changeRole(u.id, e.target.value)}
-                          disabled={u.id === current.id} /* no self-change in UI */
-                        >
-                          {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-                        </select>
-                      </td>
-                      <td><span className={classStatus(u.status)}>{u.status}</span></td>
-                      <td>{fmtDate(u.createdAt)}</td>
-                      <td>{fmtDate(u.lastLoginAt)}</td>
-                      <td className="adprof-actionsTd">
-                        {u.status === "invited" ? (
-                          <button className="btn btn--light" onClick={() => acceptInvite(u.id)}><FiCheck/> Accept (mock)</button>
-                        ) : (
-                          <button className="btn btn--light" onClick={() => toggleSuspend(u.id)}>
-                            {u.status === "suspended" ? <><FiRefreshCw/> Activate</> : <><FiX/> Suspend</>}
-                          </button>
-                        )}
-                        <button className="btn btn--light" onClick={() => removeUser(u.id)}><FiTrash2/> Remove</button>
-                      </td>
+            {loadingTeam ? (
+              <div style={{ padding: 12, display:"flex", alignItems:"center", gap:8 }}>
+                <FiLoader className="spin" /> Loading team…
+              </div>
+            ) : (
+              <div className="adprof-tableWrap">
+                <table className="adprof-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Role</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                      <th>Last login</th>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                  {filtered.length === 0 && (
-                    <tr className="adprof-emptyRow"><td colSpan={6}>No admins match your search.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {filtered.map(u => {
+                      const uiRole = toUiRole(u.adminScope || u.role);
+                      const busy = !!rowBusy[u.id];
+                      return (
+                        <tr key={u.id}>
+                          <td className="adprof-u">
+                            <img src={`https://i.pravatar.cc/80?u=${u.email}`} alt="" />
+                            <div className="adprof-uMeta">
+                              <b>{u.name || "—"}</b>
+                              <span className="adprof-email">{u.email}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <select
+                              className="adprof-roleSel"
+                              value={uiRole}
+                              onChange={e => changeRole(u.id, e.target.value)}
+                              disabled={busy}
+                            >
+                              {UI_ROLES.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                          </td>
+                          <td><span className={classStatus(u.status)}>{String(u.status || "").toLowerCase()}</span></td>
+                          <td>{fmtDate(u.createdAt)}</td>
+                          <td>{fmtDate(u.lastLoginAt)}</td>
+                          <td className="adprof-actionsTd">
+                            {u.status === "INVITED" ? (
+                              <button className="btn btn--light" onClick={() => acceptInvite(u.id)} disabled={busy}><FiCheck/> Accept</button>
+                            ) : (
+                              <button className="btn btn--light" onClick={() => toggleSuspend(u.id)} disabled={busy}>
+                                {u.status === "SUSPENDED" ? <><FiRefreshCw/> Activate</> : <><FiX/> Suspend</>}
+                              </button>
+                            )}
+                            <button className="btn btn--light" onClick={() => resetPassword(u.id)} disabled={busy}><FiRefreshCw/> Reset password</button>
+                            <button className="btn btn--light" onClick={() => removeUser(u.id)} disabled={busy}><FiTrash2/> Remove</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filtered.length === 0 && (
+                      <tr className="adprof-emptyRow"><td colSpan={6}>No admins match your search.</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
         </div>
       )}
+
+      
     </section>
+
+
+{modal.visible && (
+  <Modal
+    title={modal.title}
+    message={modal.message}
+    onClose={() => setModal({ ...modal, visible: false })}
+  >
+    {/* Conditional content for the copiable password */}
+    {modal.copiablePassword && (
+      <div className="modal-copy-pwd">
+        <input type="text" value={modal.copiablePassword} readOnly />
+        <button className="btn btn--light" onClick={() => {
+          navigator.clipboard.writeText(modal.copiablePassword);
+        }}>
+          <FiCopy /> Copy
+        </button>
+      </div>
+    )}
+  </Modal>
+)}
+
+</>
+
+    
   );
+
+  
 }

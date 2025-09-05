@@ -5,14 +5,16 @@ import {
   FiSettings, FiSearch, FiBell, FiLogOut, FiShield
 } from "react-icons/fi";
 import "./AdminLayout.css";
+import { useAuth } from "../../../Context/AuthContext.jsx";
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
   const loc = useLocation();
+  const { user, logout } = useAuth();
 
   const signOut = () => {
-    localStorage.removeItem("auth:role");
+    logout();
     nav("/admin/login", { replace: true });
   };
 
@@ -25,7 +27,6 @@ export default function AdminLayout() {
       "/admin/settings": "Settings",
       "/admin/profile": "Profile & Access",
     };
-    // find the longest matching key
     const keys = Object.keys(map).sort((a,b)=>b.length-a.length);
     const hit = keys.find(k => loc.pathname.startsWith(k)) || "/admin";
     return map[hit];
@@ -64,10 +65,10 @@ export default function AdminLayout() {
 
         <div className="hbax-sideFoot">
           <div className="hbax-userMini">
-            <img src="https://i.pravatar.cc/64?img=65" alt="" />
+            <img src={`https://i.pravatar.cc/64?u=${encodeURIComponent(user?.email || "admin")}`} alt="" />
             <div>
-              <b>Admin {" "}</b>
-              <small>admin@homebridge</small>
+              <b>{user?.name || "Admin"}</b>
+              <small>{user?.email || ""}</small>
             </div>
           </div>
           <button className="hbax-signout" onClick={signOut}><FiLogOut/> Sign out</button>
@@ -91,7 +92,7 @@ export default function AdminLayout() {
           <span className="hbax-dot" />
         </button>
         <div className="hbax-avatar">
-          <img src="https://i.pravatar.cc/40?img=65" alt="" />
+          <img src={`https://i.pravatar.cc/40?u=${encodeURIComponent(user?.email || "admin")}`} alt="" />
         </div>
       </header>
 

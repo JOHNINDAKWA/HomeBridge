@@ -104,3 +104,97 @@ input.is-readonly{ background:#f9fafb; color:#475569; }
 /* Buttons (reuse your globals; add subtle tweaks here) */
 .btn{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:10px; border:1px solid #b8ece8; background:linear-gradient(180deg,#00b2b2,#019191); color:#fff; cursor:pointer; }
 .btn--light{ background:#fff; color:#0f766e; border-color:#b8ece8; }
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+
+/* ---- Identity (compact, no huge whitespace) ---- */
+.asx-card.asx-identity{
+  padding:20px 24px;
+  border-radius:16px;
+}
+.asx-card.asx-identity > *:first-child{ margin-top:0; }
+.asx-card.asx-identity > *:last-child{  margin-bottom:0; }
+
+.asx-identity .asx-idgrid{
+  display:grid;
+  grid-template-columns:72px 1fr;
+  gap:16px;
+  align-items:center;
+}
+.asx-identity .asx-ava{
+  width:72px; height:72px; border-radius:14px; overflow:hidden;
+  box-shadow:0 8px 20px rgba(2,117,117,.10);
+}
+.asx-identity .asx-fields{ display:grid; gap:12px; }
+
+.asx-identity .asx-field input,
+.asx-identity .asx-field select{
+  border-radius:12px;            /* softer corners */
+  background:#fff;
+  border:1px solid var(--border);
+  min-height:44px;
+}
+
+/* role/status chips inside identity (looks like your badges) */
+.asx-identity .chip, .asx-identity .badge{
+  border-radius:999px;
+  padding:6px 10px;
+}
+
+/* ---- Invite admin (pill inputs + tighter row) ---- */
+.asx-invite .asx-row{
+  display:grid;
+  grid-template-columns:1.1fr 1.25fr 0.8fr 1.25fr auto; /* name, email, role, temp pwd, button */
+  gap:12px;
+}
+@media (max-width: 960px){
+  .asx-invite .asx-row{ grid-template-columns:1fr; }
+}
+
+/* make inputs/selects pill shaped and “finished” */
+.asx-invite input,
+.asx-invite select{
+  border-radius:999px;
+  padding:12px 16px;
+  background:#fff;
+  border:1px solid var(--border);
+  box-shadow:0 1px 0 rgba(2,117,117,.05);
+  min-height:44px;
+}
+
+/* prettier native select arrow */
+.asx-invite select{
+  appearance:none; -webkit-appearance:none;
+  padding-right:38px;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23108998' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+}
+
+/* invite button matches pills */
+.asx-invite .btn{
+  height:44px;
+  border-radius:999px;
+  padding:0 16px;
+  box-shadow:0 8px 18px rgba(0,178,178,.15);
+}
+
+/* helper text spacing */
+.asx-invite .asx-hint{ margin-top:6px; }
+
+/* consistent focus ring on all these fields */
+.asx-identity input:focus,
+.asx-identity select:focus,
+.asx-invite input:focus,
+.asx-invite select:focus{
+  border-color:var(--brand);
+  box-shadow:0 0 0 3px rgba(20,184,166,.12);
+  outline:none;
+}
+.asx-invite input,
+.asx-invite select,
+.asx-identity input,
+.asx-identity select{ border-radius:999px; }
+

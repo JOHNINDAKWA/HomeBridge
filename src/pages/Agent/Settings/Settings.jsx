@@ -1,72 +1,175 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FiUser, FiBriefcase, FiUpload, FiGlobe, FiMapPin, FiPhone, FiMail,
   FiCheckCircle, FiAlertTriangle, FiShield, FiKey, FiLock,
-  FiBell, FiLink, FiSave, FiTrash2, FiCreditCard
+  FiBell, FiLink, FiTrash2, FiCreditCard
 } from "react-icons/fi";
+import { useAuth } from "../../../Context/AuthContext.jsx";
 import "./Settings.css";
 
+/* --------- Small UI helpers --------- */
+function Spinner({ size = 16 }) {
+  return <span className="hb-spinner" style={{ width: size, height: size }} aria-hidden="true" />;
+}
+
+function SaveButton({ saving, saved, onClick, children }) {
+  return (
+    <button
+      type="button"
+      className="btn"
+      onClick={onClick}
+      disabled={saving}
+      aria-busy={saving}
+      style={{ minWidth: 120, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+    >
+      {saving ? <Spinner /> : saved ? <FiCheckCircle /> : null}
+      {saving ? "Saving…" : saved ? "Saved" : children}
+    </button>
+  );
+}
+
+function Toggle({ label, checked, onChange, icon }) {
+  return (
+    <label className="set-toggle__item">
+      <span className="set-toggle__label">
+        {icon ? <span className="ico">{icon}</span> : null}
+        {label}
+      </span>
+      <span className={`switch ${checked ? "on" : ""}`}>
+        <input type="checkbox" checked={checked} onChange={(e)=>onChange(e.target.checked)} />
+        <i />
+      </span>
+    </label>
+  );
+}
+
 export default function Settings() {
-  // Demo state — swap with API data later
-  const [profile, setProfile] = useState({
-    first: "Samuel",
-    last: "Njoroge",
-    email: "samuel@harborhomes.co",
-    phone: "+254 700 123 456",
-    city: "Nairobi, Kenya",
-  });
+  const { api, user } = useAuth();
 
-  const [org, setOrg] = useState({
-    name: "Harbor Homes Ltd.",
-    website: "https://harborhomes.example",
-    support: "support@harborhomes.co",
-  });
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
 
+  // form state
+  const [profile, setProfile] = useState({ first: "", last: "", email: "", phone: "", city: "" });
+  const [org, setOrg] = useState({ orgName: "", website: "", supportEmail: "" });
   const [payout, setPayout] = useState({
-    method: "bank", // bank | mpesa
-    bankName: "Equity Bank",
-    accountName: "Harbor Homes Ltd.",
-    accountNumber: "011234567890",
-    branch: "Upper Hill",
-    mpesaPhone: "+254700123456",
+    payoutMethod: "BANK", bankName: "", accountName: "", accountNumber: "", branch: "", mpesaPhone: ""
   });
-
-  const [prefs, setPrefs] = useState({
-    timezone: "America/New_York",
-    currency: "USD",
-    unit: "imperial", // imperial | metric
-  });
-
+  const [prefs, setPrefs] = useState({ prefsTimezone: "Africa/Nairobi", prefsCurrency: "USD", prefsUnit: "IMPERIAL" });
   const [notify, setNotify] = useState({
-    newInquiry: true,
-    docUploaded: true,
-    offerEmailed: true,
-    payoutPaid: true,
-    weeklyDigest: false,
+    notifyNewInquiry: true, notifyDocUploaded: true, notifyOfferEmailed: true, notifyPayoutPaid: true, notifyWeeklyDigest: false
   });
+  const [dev, setDev] = useState({ devWebhook: "" });
 
-  const [dev, setDev] = useState({ webhook: "" });
+  // per-section save state
+  const [saving, setSaving] = useState({ profile: false, org: false, payout: false, prefs: false, notify: false, dev: false });
+  const [saved, setSaved]   = useState({ profile: false, org: false, payout: false, prefs: false, notify: false, dev: false });
 
-  // Helpers
   const update = (setter) => (k, v) => setter((s) => ({ ...s, [k]: v }));
 
-  const saveAll = (e) => {
-    e.preventDefault();
-    // TODO: send to API
-    alert("Saved! (demo)");
+  // preload
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      try {
+        setErr("");
+        const { profile: p } = await api("/api/agents/me/profile");
+        if (!live) return;
+
+        setProfile(s => ({
+          ...s,
+          first: p.first || "",
+          last: p.last || "",
+          email: p.email || user?.email || "",
+          phone: p.phone || "",
+          city: p.city || "",
+        }));
+
+        setOrg(s => ({
+          ...s,
+          orgName: p.orgName || "",
+          website: p.website || "",
+          supportEmail: p.supportEmail || "",
+        }));
+
+        setPayout(s => ({
+          ...s,
+          payoutMethod: p.payoutMethod || "BANK",
+          bankName: p.bankName || "",
+          accountName: p.accountName || "",
+          accountNumber: p.accountNumber || "",
+          branch: p.branch || "",
+          mpesaPhone: p.mpesaPhone || "",
+        }));
+
+        setPrefs(s => ({
+          ...s,
+          prefsTimezone: p.prefsTimezone || "Africa/Nairobi",
+          prefsCurrency: p.prefsCurrency || "USD",
+          prefsUnit: p.prefsUnit || "IMPERIAL",
+        }));
+
+        setNotify(s => ({
+          ...s,
+          notifyNewInquiry: p.notifyNewInquiry ?? true,
+          notifyDocUploaded: p.notifyDocUploaded ?? true,
+          notifyOfferEmailed: p.notifyOfferEmailed ?? true,
+          notifyPayoutPaid: p.notifyPayoutPaid ?? true,
+          notifyWeeklyDigest: p.notifyWeeklyDigest ?? false,
+        }));
+
+        setDev(s => ({ ...s, devWebhook: p.devWebhook || "" }));
+      } catch (e) {
+        setErr(e.message || "Failed to load");
+      } finally {
+        if (live) setLoading(false);
+      }
+    })();
+    return () => { live = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // shared saver
+  const savePart = async (patch, key) => {
+    setErr("");
+    setSaving(s => ({ ...s, [key]: true }));
+    setSaved(s => ({ ...s, [key]: false }));
+    try {
+      await api("/api/agents/me/profile", { method: "PUT", body: patch });
+      setSaved(s => ({ ...s, [key]: true }));
+      setTimeout(() => setSaved(s => ({ ...s, [key]: false })), 1200);
+    } catch (e) {
+      setErr(e.message || "Failed to save");
+    } finally {
+      setSaving(s => ({ ...s, [key]: false }));
+    }
   };
 
+  if (loading) {
+    return (
+      <div className="container2">
+        <div className="card" style={{ padding: 20, display: "flex", alignItems: "center", gap: 10 }}>
+          <Spinner size={18} /> Loading…
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <form className="set" onSubmit={saveAll}>
+    <form className="set" onSubmit={(e)=>e.preventDefault()}>
       <header className="set-head">
         <div>
           <h2 className="set-title">Settings</h2>
-          <p className="set-sub">
-            Manage your partner profile, verification, payouts, notifications, and security.
-          </p>
+          <p className="set-sub">Manage your partner profile, verification, payouts, notifications, and preferences.</p>
         </div>
-        <button className="btn"><FiSave /> Save changes</button>
+        {/* Save-all removed; each section has its own Save */}
       </header>
+
+      {err && (
+        <div className="card" style={{ padding: 12, borderColor: "#e11d48", color: "#b91c1c" }}>
+          ⚠ {err}
+        </div>
+      )}
 
       {/* ===== Grid ===== */}
       <div className="set-grid">
@@ -74,7 +177,15 @@ export default function Settings() {
         <section className="card set-box">
           <header className="set-box__head">
             <h3><FiUser /> Profile</h3>
+            <SaveButton
+              saving={saving.profile}
+              saved={saved.profile}
+              onClick={() => savePart(profile, "profile")}
+            >
+              Save
+            </SaveButton>
           </header>
+
           <div className="set-row">
             <label>First name
               <input className="input" value={profile.first}
@@ -105,10 +216,17 @@ export default function Settings() {
         <section className="card set-box">
           <header className="set-box__head">
             <h3><FiBriefcase /> Organization</h3>
+            <SaveButton
+              saving={saving.org}
+              saved={saved.org}
+              onClick={() => savePart(org, "org")}
+            >
+              Save
+            </SaveButton>
           </header>
           <label>Legal/Trading name
-            <input className="input" value={org.name}
-                   onChange={(e)=>update(setOrg)("name", e.target.value)} />
+            <input className="input" value={org.orgName}
+                   onChange={(e)=>update(setOrg)("orgName", e.target.value)} />
           </label>
           <div className="set-row">
             <label><FiGlobe /> Website
@@ -116,50 +234,52 @@ export default function Settings() {
                      onChange={(e)=>update(setOrg)("website", e.target.value)} />
             </label>
             <label><FiMail /> Support email
-              <input className="input" value={org.support}
-                     onChange={(e)=>update(setOrg)("support", e.target.value)} />
+              <input className="input" value={org.supportEmail}
+                     onChange={(e)=>update(setOrg)("supportEmail", e.target.value)} />
             </label>
           </div>
         </section>
 
-        {/* Verification (KYC/KYB) */}
+        {/* Verification (display stub) */}
         <section className="card set-box">
           <header className="set-box__head">
             <h3><FiShield /> Verification</h3>
             <span className="badge badge--ok"><FiCheckCircle /> KYC partially verified</span>
           </header>
-          <p className="mini muted">
-            Upload a government ID (front + back) and one proof of business (certificate,
-            tax number, or utility bill). We review within 24–48 hours.
-          </p>
+          <p className="mini muted">Upload a government ID (front + back) and one proof of business.</p>
           <div className="set-upload">
             <button type="button" className="btn btn--light"><FiUpload /> Upload ID (front)</button>
             <button type="button" className="btn btn--light"><FiUpload /> Upload ID (back)</button>
             <button type="button" className="btn btn--light"><FiUpload /> Upload business doc</button>
           </div>
-          <div className="set-hint mini">
-            <FiAlertTriangle /> Only encrypted, watermarked previews are visible to students.
-          </div>
+          <div className="set-hint mini"><FiAlertTriangle /> Only encrypted, watermarked previews are visible to students.</div>
         </section>
 
         {/* Payouts */}
         <section className="card set-box">
           <header className="set-box__head">
             <h3><FiCreditCard /> Payouts</h3>
+            <SaveButton
+              saving={saving.payout}
+              saved={saved.payout}
+              onClick={() => savePart(payout, "payout")}
+            >
+              Save
+            </SaveButton>
           </header>
 
           <div className="set-payout__tabs">
-            <label className={`chip ${payout.method === "bank" ? "chip--active" : ""}`}>
-              <input type="radio" name="paym" checked={payout.method==="bank"}
-                     onChange={()=>update(setPayout)("method","bank")} /> Bank account
+            <label className={`chip ${payout.payoutMethod === "BANK" ? "chip--active" : ""}`}>
+              <input type="radio" name="paym" checked={payout.payoutMethod==="BANK"}
+                     onChange={()=>update(setPayout)("payoutMethod","BANK")} /> Bank account
             </label>
-            <label className={`chip ${payout.method === "mpesa" ? "chip--active" : ""}`}>
-              <input type="radio" name="paym" checked={payout.method==="mpesa"}
-                     onChange={()=>update(setPayout)("method","mpesa")} /> M-Pesa
+            <label className={`chip ${payout.payoutMethod === "MPESA" ? "chip--active" : ""}`}>
+              <input type="radio" name="paym" checked={payout.payoutMethod==="MPESA"}
+                     onChange={()=>update(setPayout)("payoutMethod","MPESA")} /> M-Pesa
             </label>
           </div>
 
-          {payout.method === "bank" ? (
+          {payout.payoutMethod === "BANK" ? (
             <>
               <div className="set-row">
                 <label>Bank name
@@ -198,41 +318,31 @@ export default function Settings() {
         <section className="card set-box">
           <header className="set-box__head">
             <h3><FiBell /> Notifications</h3>
+            <SaveButton
+              saving={saving.notify}
+              saved={saved.notify}
+              onClick={() => savePart(notify, "notify")}
+            >
+              Save
+            </SaveButton>
           </header>
           <div className="set-toggle">
-            <Toggle
-              label="New inquiry"
-              checked={notify.newInquiry}
-              onChange={(v)=>update(setNotify)("newInquiry", v)}
-            />
-            <Toggle
-              label="Document uploaded"
-              checked={notify.docUploaded}
-              onChange={(v)=>update(setNotify)("docUploaded", v)}
-            />
-            <Toggle
-              label="Offer emailed / E-sign events"
-              checked={notify.offerEmailed}
-              onChange={(v)=>update(setNotify)("offerEmailed", v)}
-            />
-            <Toggle
-              label="Payout sent"
-              checked={notify.payoutPaid}
-              onChange={(v)=>update(setNotify)("payoutPaid", v)}
-            />
-            <Toggle
-              label="Weekly digest"
-              checked={notify.weeklyDigest}
-              onChange={(v)=>update(setNotify)("weeklyDigest", v)}
-            />
+            <Toggle label="New inquiry" checked={notify.notifyNewInquiry}
+                    onChange={(v)=>update(setNotify)("notifyNewInquiry", v)} />
+            <Toggle label="Document uploaded" checked={notify.notifyDocUploaded}
+                    onChange={(v)=>update(setNotify)("notifyDocUploaded", v)} />
+            <Toggle label="Offer emailed / E-sign events" checked={notify.notifyOfferEmailed}
+                    onChange={(v)=>update(setNotify)("notifyOfferEmailed", v)} />
+            <Toggle label="Payout sent" checked={notify.notifyPayoutPaid}
+                    onChange={(v)=>update(setNotify)("notifyPayoutPaid", v)} />
+            <Toggle label="Weekly digest" checked={notify.notifyWeeklyDigest}
+                    onChange={(v)=>update(setNotify)("notifyWeeklyDigest", v)} />
           </div>
         </section>
 
-        {/* Security */}
+        {/* Security (UI only) */}
         <section className="card set-box">
-          <header className="set-box__head">
-            <h3><FiLock /> Security</h3>
-          </header>
+          <header className="set-box__head"><h3><FiLock /> Security</h3></header>
           <div className="set-row">
             <label>Current password
               <input className="input" type="password" placeholder="••••••••" />
@@ -246,12 +356,7 @@ export default function Settings() {
               <input className="input" type="password" placeholder="Repeat new password" />
             </label>
             <div className="set-inline">
-              <Toggle
-                label="Enable 2-factor auth (TOTP)"
-                checked={true}
-                onChange={()=>{}}
-                icon={<FiKey />}
-              />
+              <Toggle label="Enable 2-factor auth (TOTP)" checked={true} onChange={()=>{}} icon={<FiKey />} />
               <button type="button" className="btn btn--light"><FiShield /> Manage devices</button>
             </div>
           </div>
@@ -261,20 +366,27 @@ export default function Settings() {
         <section className="card set-box">
           <header className="set-box__head">
             <h3><FiGlobe /> Preferences</h3>
+            <SaveButton
+              saving={saving.prefs}
+              saved={saved.prefs}
+              onClick={() => savePart(prefs, "prefs")}
+            >
+              Save
+            </SaveButton>
           </header>
           <div className="set-row">
             <label>Timezone
-              <select className="select" value={prefs.timezone}
-                      onChange={(e)=>update(setPrefs)("timezone", e.target.value)}>
+              <select className="select" value={prefs.prefsTimezone}
+                      onChange={(e)=>update(setPrefs)("prefsTimezone", e.target.value)}>
+                <option value="Africa/Nairobi">Africa/Nairobi</option>
                 <option value="America/New_York">America/New_York</option>
                 <option value="America/Los_Angeles">America/Los_Angeles</option>
                 <option value="Europe/London">Europe/London</option>
-                <option value="Africa/Nairobi">Africa/Nairobi</option>
               </select>
             </label>
             <label>Currency
-              <select className="select" value={prefs.currency}
-                      onChange={(e)=>update(setPrefs)("currency", e.target.value)}>
+              <select className="select" value={prefs.prefsCurrency}
+                      onChange={(e)=>update(setPrefs)("prefsCurrency", e.target.value)}>
                 <option value="USD">USD</option>
                 <option value="KES">KES</option>
                 <option value="GBP">GBP</option>
@@ -285,72 +397,49 @@ export default function Settings() {
           <div className="set-row">
             <label>Measurement units
               <div className="set-payout__tabs">
-                <label className={`chip ${prefs.unit === "imperial" ? "chip--active" : ""}`}>
-                  <input type="radio" name="units" checked={prefs.unit==="imperial"}
-                         onChange={()=>update(setPrefs)("unit","imperial")} /> Imperial
+                <label className={`chip ${prefs.prefsUnit === "IMPERIAL" ? "chip--active" : ""}`}>
+                  <input type="radio" name="units" checked={prefs.prefsUnit==="IMPERIAL"}
+                         onChange={()=>update(setPrefs)("prefsUnit","IMPERIAL")} /> Imperial
                 </label>
-                <label className={`chip ${prefs.unit === "metric" ? "chip--active" : ""}`}>
-                  <input type="radio" name="units" checked={prefs.unit==="metric"}
-                         onChange={()=>update(setPrefs)("unit","metric")} /> Metric
+                <label className={`chip ${prefs.prefsUnit === "METRIC" ? "chip--active" : ""}`}>
+                  <input type="radio" name="units" checked={prefs.prefsUnit==="METRIC"}
+                         onChange={()=>update(setPrefs)("prefsUnit","METRIC")} /> Metric
                 </label>
               </div>
             </label>
           </div>
         </section>
 
-        {/* Developer webhooks */}
+        {/* Developer */}
         <section className="card set-box">
           <header className="set-box__head">
             <h3><FiLink /> Developer</h3>
+            <SaveButton
+              saving={saving.dev}
+              saved={saved.dev}
+              onClick={() => savePart(dev, "dev")}
+            >
+              Save
+            </SaveButton>
           </header>
           <label>Webhook URL (application events)
-            <input className="input" placeholder="https://example.com/webhooks/homebridge"
-                   value={dev.webhook}
-                   onChange={(e)=>update(setDev)("webhook", e.target.value)} />
+            <input
+              className="input"
+              placeholder="https://example.com/webhooks/homebridge"
+              value={dev.devWebhook}
+              onChange={(e)=>update(setDev)("devWebhook", e.target.value)}
+            />
           </label>
-          <p className="mini muted">
-            We’ll POST JSON when applications change stage (New → Reviewing, Offer Sent, E-signed).
-          </p>
+          <p className="mini muted">We’ll POST JSON when applications change stage (New → Reviewing, Offer Sent, E-signed).</p>
         </section>
 
-        {/* Danger zone */}
+        {/* Danger zone (UI only) */}
         <section className="card set-box set-danger">
-          <header className="set-box__head">
-            <h3><FiAlertTriangle /> Danger zone</h3>
-          </header>
-          <p className="muted">
-            Deactivate your partner account. Listings will be hidden and future payouts halted.
-          </p>
-          <button type="button" className="btn btn--danger">
-            <FiTrash2 /> Deactivate account
-          </button>
+          <header className="set-box__head"><h3><FiAlertTriangle /> Danger zone</h3></header>
+          <p className="muted">Deactivate your partner account. Listings will be hidden and future payouts halted.</p>
+          <button type="button" className="btn btn--danger"><FiTrash2 /> Deactivate account</button>
         </section>
-      </div>
-
-      {/* Sticky bottom save for mobile */}
-      <div className="set-sticky">
-        <button className="btn"><FiSave /> Save changes</button>
       </div>
     </form>
-  );
-}
-
-/* ---------- tiny Toggle component ---------- */
-function Toggle({ label, checked, onChange, icon }) {
-  return (
-    <label className="set-toggle__item">
-      <span className="set-toggle__label">
-        {icon ? <span className="ico">{icon}</span> : null}
-        {label}
-      </span>
-      <span className={`switch ${checked ? "on" : ""}`}>
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(e)=>onChange(e.target.checked)}
-        />
-        <i />
-      </span>
-    </label>
   );
 }

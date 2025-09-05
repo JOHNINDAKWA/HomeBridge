@@ -6,7 +6,7 @@ import "./StudentLayout.css";
 
 export default function StudentLayout(){
   const navigate = useNavigate();
-  const { profile, documents } = useAuth();
+  const { user, logout, profile, documents } = useAuth();
 
   const [bookings, setBookings] = useState(() => {
     try { return JSON.parse(localStorage.getItem("student:bookings")) || []; } catch { return []; }
@@ -35,17 +35,30 @@ export default function StudentLayout(){
     return Math.round((filled / keys.length) * 100);
   }, [profile]);
 
+  const onLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <section className="sdl-wrap container2">
       {/* Hero */}
       <header className="sdl-hero card">
         <div>
-          <h1>Welcome{profile?.fullName ? `, ${profile.fullName.split(" ")[0]}` : ""} 👋</h1>
+          <h1>
+            Welcome
+            { (profile?.fullName || user?.name)
+              ? `, ${(profile?.fullName || user?.name).split(" ")[0]}`
+              : "" } 👋
+          </h1>
           <p className="sdl-muted">Manage bookings, documents, and your profile, all in one place.</p>
         </div>
         <div>
           <button className="btn btn--light" onClick={() => navigate("/listings")}>
             <FiBookOpen /> Browse Listings
+          </button>
+          <button className="btn btn--light" style={{ marginLeft: 8 }} onClick={onLogout}>
+            Sign out
           </button>
         </div>
       </header>
@@ -75,7 +88,7 @@ export default function StudentLayout(){
             <NavLink to="documents" className={({isActive}) => `sdl-tab ${isActive?"is-active":""}`}><FiFileText /> Documents</NavLink>
             <NavLink to="profile" className={({isActive}) => `sdl-tab ${isActive?"is-active":""}`}><FiUser /> Profile</NavLink>
           </nav>
-          <div className="sdl-side__hint">Changes save automatically.</div>
+          <div className="sdl-side__hint">Signed in as <b>{user?.email || "—"}</b>. Changes save automatically.</div>
         </aside>
 
         <main className="sdl-main">

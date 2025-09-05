@@ -1,15 +1,20 @@
-
-// src/pages/Agent/Agent.jsx
 import { useState, useEffect } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   FiPlus, FiList, FiInbox, FiMessageSquare, FiDollarSign, FiSettings, FiBarChart2, FiMenu, FiX
 } from "react-icons/fi";
 import "./Agent.css";
+import { useAuth } from "../../Context/AuthContext.jsx";
 
 export default function Agent() {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+
+  const onLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
 
   // Close drawer when route changes (best effort)
   useEffect(() => {
@@ -39,11 +44,7 @@ export default function Agent() {
           >
             <FiMenu /> Menu
           </button>
-          <button
-            className="btn"
-            type="button"
-            onClick={() => navigate("listings/new")}
-          >
+          <button className="btn" type="button" onClick={() => navigate("listings/new")}>
             <FiPlus /> New listing
           </button>
         </div>
@@ -71,9 +72,29 @@ export default function Agent() {
             <NavLink to="settings"><FiSettings /> Settings</NavLink>
           </nav>
 
-          <button className="btn ag-new" onClick={() => { setOpen(false); navigate("listings/new"); }}>
+          <button
+            className="btn ag-new"
+            onClick={() => { setOpen(false); navigate("listings/new"); }}
+          >
             <FiPlus /> New listing
           </button>
+
+          <div className="ag-account" style={{marginTop: 12, paddingTop: 12, borderTop: "1px solid #e7ecf0"}}>
+            <div className="ag-userMini" style={{display:"flex", gap:10, alignItems:"center", marginBottom:8}}>
+              <img
+                src={`https://i.pravatar.cc/64?u=${encodeURIComponent(user?.email || "agent")}`}
+                alt=""
+                style={{width:36, height:36, borderRadius:999}}
+              />
+              <div style={{lineHeight:1.1}}>
+                <b>{user?.name || "Signed in"}</b>
+                <div style={{fontSize:12, color:"#667085"}}>{user?.email || ""}</div>
+              </div>
+            </div>
+            <button type="button" className="btn btn--light ag-logout" onClick={onLogout}>
+              Sign out
+            </button>
+          </div>
         </aside>
 
         {/* Backdrop for drawer */}
